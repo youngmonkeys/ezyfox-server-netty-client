@@ -6,9 +6,7 @@ import com.tvd12.ezyfox.codec.EzyMessageToBytes;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.buffer.Unpooled;
-import lombok.Builder;
 
-@Builder
 public class EzySimpleMessageToBytes implements EzyMessageToBytes {
 
 	@SuppressWarnings("unchecked")

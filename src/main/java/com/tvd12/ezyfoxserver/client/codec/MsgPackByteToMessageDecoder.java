@@ -12,7 +12,6 @@ import com.tvd12.ezyfox.codec.EzyDecodeState;
 import com.tvd12.ezyfox.codec.EzyIDecodeState;
 import com.tvd12.ezyfox.codec.EzyMessage;
 import com.tvd12.ezyfox.codec.EzyMessageDeserializer;
-import com.tvd12.ezyfoxserver.handler.EzyBytesReceived;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -30,15 +29,6 @@ public class MsgPackByteToMessageDecoder extends ByteToMessageDecoder {
 				.maxSize(maxSize)
 				.deserializer(deserializer)
 				.build();
-	}
-	
-	@Override
-	public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-		ByteBuf bytes = (ByteBuf)msg;
-		int bytesCount = bytes.readableBytes(); 
-		super.channelRead(ctx, msg);
-		EzyBytesReceived delegate = (EzyBytesReceived)ctx.pipeline().get("handler");
-		delegate.bytesReceived(bytesCount);
 	}
 	
 	@Override

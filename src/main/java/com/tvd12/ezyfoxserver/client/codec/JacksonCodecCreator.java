@@ -4,9 +4,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.tvd12.ezyfox.codec.EzyCodecCreator;
 import com.tvd12.ezyfox.codec.EzyMessageByTypeSerializer;
 import com.tvd12.ezyfox.codec.EzyMessageDeserializer;
-import com.tvd12.ezyfox.codec.JacksonObjectMapperBuilder;
 import com.tvd12.ezyfox.codec.JacksonSimpleDeserializer;
 import com.tvd12.ezyfox.codec.JacksonSimpleSerializer;
+import com.tvd12.ezyfox.jackson.JacksonObjectMapperBuilder;
 
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelOutboundHandler;

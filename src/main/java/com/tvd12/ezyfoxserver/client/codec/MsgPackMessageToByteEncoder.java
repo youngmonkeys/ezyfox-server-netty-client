@@ -4,7 +4,6 @@ import com.tvd12.ezyfox.codec.EzyMessage;
 import com.tvd12.ezyfox.codec.EzyMessageToBytes;
 import com.tvd12.ezyfox.codec.EzyObjectToMessage;
 import com.tvd12.ezyfox.entity.EzyArray;
-import com.tvd12.ezyfoxserver.handler.EzyBytesSent;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -27,10 +26,7 @@ public class MsgPackMessageToByteEncoder extends MessageToByteEncoder<EzyArray> 
 	protected void encode(ChannelHandlerContext ctx, EzyArray msg, ByteBuf out) 
 			throws Exception {
 		ByteBuf bytes = convertObjectToBytes(msg);
-		int bytesCount = bytes.readableBytes();
 		writeMessage(bytes, out);
-		EzyBytesSent delegate = (EzyBytesSent)ctx.pipeline().get("handler");
-		delegate.bytesSent(bytesCount);
 	}
 	
 	protected ByteBuf convertObjectToBytes(EzyArray object) {

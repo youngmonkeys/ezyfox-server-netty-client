@@ -13,12 +13,15 @@ import io.netty.channel.ChannelOutboundHandler;
 
 public class MsgPackCodecCreator implements EzyCodecCreator {
 
-	protected final EzyMessageToBytes messageToBytes 
-			= EzySimpleMessageToBytes.builder().build();
-	protected final EzyObjectToMessage objectToMessage 
-			= MsgPackObjectToMessage.builder().build();
-	protected final EzyMessageDeserializer deserializer 
-			= new MsgPackSimpleDeserializer();
+	protected final EzyMessageToBytes messageToBytes;
+	protected final EzyObjectToMessage objectToMessage; 
+	protected final EzyMessageDeserializer deserializer; 
+	
+	public MsgPackCodecCreator() {
+		this.messageToBytes = new EzySimpleMessageToBytes();
+		this.objectToMessage = new MsgPackObjectToMessage();
+		this.deserializer = new MsgPackSimpleDeserializer();
+	}
 	
 	@Override
 	public ChannelInboundHandlerAdapter newDecoder(int maxRequestSize) {

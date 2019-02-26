@@ -24,7 +24,7 @@ public class EzyByteBufMessageReader extends EzyMessageReader<ByteBuf> {
 	}
 	
 	@Override
-	protected void readMessageContent(ByteBuf buffer, byte[] content) {
-		buffer.readBytes(content);
+	protected void readMessageContent(ByteBuf buffer, byte[] content, int offset, int length) {
+		buffer.readBytes(content, offset, length);
 	}
 }
