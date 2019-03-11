@@ -14,12 +14,12 @@ import com.tvd12.ezyfoxserver.client.event.EzyEvent;
 public class EzySocketDataHandler extends EzyLoggable implements EzyResettable {
     protected SocketChannel socketChannel;
     protected volatile boolean disconnected;
-    protected final EzySocketEventQueue eventQueue;
+    protected final EzySocketEventQueue socketEventQueue;
     protected final EzyDisconnectionDelegate disconnectionDelegate;
 
     public EzySocketDataHandler(EzySocketEventQueue eventQueue,
                                 EzyDisconnectionDelegate disconnectionDelegate) {
-        this.eventQueue = eventQueue;
+        this.socketEventQueue = eventQueue;
         this.disconnectionDelegate = disconnectionDelegate;
     }
 
@@ -43,7 +43,7 @@ public class EzySocketDataHandler extends EzyLoggable implements EzyResettable {
     }
 
     public void fireSocketEvent(EzySocketEvent socketEvent) {
-        eventQueue.add(socketEvent);
+        socketEventQueue.add(socketEvent);
     }
 
     @Override

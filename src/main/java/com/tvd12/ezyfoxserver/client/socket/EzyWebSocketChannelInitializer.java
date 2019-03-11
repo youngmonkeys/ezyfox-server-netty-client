@@ -4,6 +4,7 @@ import java.net.URI;
 
 import com.tvd12.ezyfoxserver.client.handler.EzyChannelHandler;
 import com.tvd12.ezyfoxserver.client.handler.EzyWebSocketChannelHandler;
+import com.tvd12.ezyfoxserver.client.util.EzyURIs;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelPipeline;
@@ -14,6 +15,9 @@ import io.netty.handler.codec.http.websocketx.WebSocketClientHandshaker;
 import io.netty.handler.codec.http.websocketx.WebSocketClientHandshakerFactory;
 import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
 import io.netty.handler.codec.http.websocketx.WebSocketVersion;
+import io.netty.handler.ssl.SslContext;
+import io.netty.handler.ssl.SslContextBuilder;
+import io.netty.handler.ssl.util.InsecureTrustManagerFactory;
 import io.netty.handler.stream.ChunkedWriteHandler;
 
 public class EzyWebSocketChannelInitializer extends EzyAbstractChannelInitializer {
@@ -27,7 +31,14 @@ public class EzyWebSocketChannelInitializer extends EzyAbstractChannelInitialize
 	
 	@Override
 	protected void initChannel0(Channel ch) throws Exception {
+		String scheme = uri.getScheme();
 		ChannelPipeline pipeline = ch.pipeline();
+		if(scheme.equals("wss")) {
+			SslContext sslCtx = SslContextBuilder.forClient()
+					.trustManager(InsecureTrustManagerFactory.INSTANCE).build();
+			int port = EzyURIs.getWsPort(uri);
+			pipeline.addLast(sslCtx.newHandler(ch.alloc(), uri.getHost(), port));
+		}
 		pipeline.addLast("http-client-codec", new HttpClientCodec());
 		pipeline.addLast("http-object-aggregator", new HttpObjectAggregator(64 * 1024));
 		pipeline.addLast("chunked-write-handler", new ChunkedWriteHandler());

@@ -3,6 +3,8 @@ package com.tvd12.ezyfoxserver.client.socket;
 import java.net.InetSocketAddress;
 import java.net.URI;
 
+import com.tvd12.ezyfoxserver.client.util.EzyURIs;
+
 /**
  * Created by tavandung12 on 9/20/18.
  */
@@ -21,7 +23,8 @@ public class EzyWebSocketClient
 	protected void preConnect(Object... args) {
 		Object arg0 = args[0];
 		uri = (arg0 instanceof URI) ? (URI)arg0 : URI.create(arg0.toString());
-		serverAddress = new InetSocketAddress(uri.getHost(), uri.getPort());
+		int port = EzyURIs.getWsPort(uri);
+		serverAddress = new InetSocketAddress(uri.getHost(), port);
 	}
 
 	@Override

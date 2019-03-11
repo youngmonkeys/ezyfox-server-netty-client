@@ -19,7 +19,7 @@ public interface EzyClient extends
         EzySender,
         EzyAppByIdGroup, EzyInstanceFetcher {
 
-    void connect(String host, int port);
+    void connect(Object... args);
 
     void connect();
 

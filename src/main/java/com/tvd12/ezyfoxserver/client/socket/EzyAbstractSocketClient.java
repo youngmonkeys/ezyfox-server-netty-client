@@ -15,7 +15,6 @@ import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.ezyfoxserver.client.config.EzyReconnectConfig;
 import com.tvd12.ezyfoxserver.client.constant.EzyCommand;
 import com.tvd12.ezyfoxserver.client.event.EzyConnectionFailureEvent;
-import com.tvd12.ezyfoxserver.client.event.EzyConnectionSuccessEvent;
 import com.tvd12.ezyfoxserver.client.event.EzyEvent;
 import com.tvd12.ezyfoxserver.client.event.EzyTryConnectEvent;
 import com.tvd12.ezyfoxserver.client.manager.EzyHandlerManager;
@@ -52,7 +51,7 @@ public abstract class EzyAbstractSocketClient
     protected final EzyReconnectConfig reconnectConfig;
     protected final EzySocketDataHandler dataHandler;
     protected final EzyCodecCreator codecCreator;
-    protected final EzySocketEventQueue eventQueue;
+    protected final EzySocketEventQueue socketEventQueue;
     protected final EzySocketDataEventHandler socketDataEventHandler;
     protected final EzySocketDataEventLoopHandler socketDataEventLoopHandler;
     
@@ -67,8 +66,9 @@ public abstract class EzyAbstractSocketClient
         this.mainThreadQueue = builder.mainThreadQueue;
         this.unloggableCommands = builder.unloggableCommands;
         this.codecCreator = builder.codecCreator;
-        this.eventQueue = new EzyLinkedBlockingEventQueue();
+        this.socketEventQueue = new EzyLinkedBlockingEventQueue();
         this.dataHandler = newSocketDataHandler();
+        this.pingSchedule.setDataHandler(dataHandler);
         this.socketDataEventHandler = newSocketDataEventHandler();
         this.socketDataEventLoopHandler = newSocketDataEventLoopHandler();
         this.startComponents();
@@ -84,7 +84,7 @@ public abstract class EzyAbstractSocketClient
     }
     
     private EzySocketDataHandler newSocketDataHandler() {
-        return new EzySocketDataHandler(eventQueue, this);
+        return new EzySocketDataHandler(socketEventQueue, this);
     }
 
     private EzySocketDataEventHandler newSocketDataEventHandler() {
@@ -93,7 +93,7 @@ public abstract class EzyAbstractSocketClient
                 dataHandler,
                 pingManager,
                 handlerManager,
-                eventQueue, unloggableCommands);
+                socketEventQueue, unloggableCommands);
     }
 
     private EzySocketDataEventLoopHandler newSocketDataEventLoopHandler() {
@@ -151,9 +151,9 @@ public abstract class EzyAbstractSocketClient
 
     protected boolean connect0() throws Exception {
         getLogger().info("connecting to server ...");
-        EzyEvent event = null;
         boolean success = false;
         try {
+        		startConnectTime = System.currentTimeMillis();
 	    		eventLoopGroup = newLoopGroup();
 	        Bootstrap b = newBootstrap(eventLoopGroup);
 	        logger.info("connecting to server ...");
@@ -161,13 +161,13 @@ public abstract class EzyAbstractSocketClient
 	        connectionFuture.syncUninterruptibly();
 	        if(connectionFuture.isSuccess()) {
 		        	logger.info("connect to server successfully");
-		        event = new EzyConnectionSuccessEvent();
 	            success = true;
 	            reconnectCount = 0;
 	            socketChannel = connectionFuture.channel();
 	        }
         } 
         catch (Exception e) {
+        		EzyEvent event = null;
 	        if(e instanceof ConnectException) {
 	            ConnectException c = (ConnectException)e;
 	            if("Network is unreachable".equalsIgnoreCase(c.getMessage()))
@@ -182,20 +182,21 @@ public abstract class EzyAbstractSocketClient
 	            event = EzyConnectionFailureEvent.unknown();
 	        }
 	        logger.info("connect to: " + getConnectionString() + " error", e);
+	        EzySocketEvent socketEvent = new EzySimpleSocketEvent(EzySocketEventType.EVENT, event);
+		    dataHandler.fireSocketEvent(socketEvent);
 	    }
-	    EzySocketEvent socketEvent = new EzySimpleSocketEvent(EzySocketEventType.EVENT, event);
-	    dataHandler.fireSocketEvent(socketEvent);
 	    return success;
     }
     
     protected Bootstrap newBootstrap(EventLoopGroup group) {
-		return new Bootstrap()
+    		Bootstrap bootstrap = new Bootstrap()
             .group(group)
             .channel(NioSocketChannel.class)
             .remoteAddress(serverAddress)
             .handler(newChannelInitializer())
             .option(ChannelOption.TCP_NODELAY, false)
-            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 300 * 1000);
+            .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5 * 1000);
+    		return bootstrap;
     }
     
     protected EventLoopGroup newLoopGroup() {
@@ -205,7 +206,7 @@ public abstract class EzyAbstractSocketClient
     protected ChannelInitializer<Channel> newChannelInitializer() {
 		EzyAbstractChannelInitializer channelInitializer = newChannelInitializerBuilder()
 				.codecCreator(codecCreator)
-				.socketEventQueue(eventQueue)
+				.socketEventQueue(socketEventQueue)
 				.build();
 		return channelInitializer;
     }
@@ -261,12 +262,12 @@ public abstract class EzyAbstractSocketClient
     }
 
     private void handleDisconnected() {
-        eventQueue.clear();
+        socketEventQueue.clear();
         pingSchedule.stop();
     }
 
     private void resetComponents() {
-        eventQueue.clear();
+        socketEventQueue.clear();
         dataHandler.reset();
     }
 

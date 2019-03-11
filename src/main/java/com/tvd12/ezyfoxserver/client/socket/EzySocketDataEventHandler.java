@@ -56,9 +56,9 @@ public class EzySocketDataEventHandler extends EzyAbstractSocketEventHandler {
     }
 
     @SuppressWarnings("rawtypes")
-	private void processEvent(final EzyEvent event) {
+	private void processEvent(EzyEvent event) {
         EzyEventType eventType = event.getType();
-        final EzyEventHandler handler = handlerManager.getEventHandler(eventType);
+        EzyEventHandler handler = handlerManager.getEventHandler(eventType);
         if(handler != null)
             mainThreadQueue.add(event, handler);
         else

@@ -3,7 +3,6 @@ package com.tvd12.ezyfoxserver.client.codec;
 import java.util.List;
 
 import com.tvd12.ezyfox.codec.EzyMessageDeserializer;
-import com.tvd12.ezyfoxserver.handler.EzyBytesReceived;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.MessageToMessageDecoder;
@@ -21,10 +20,7 @@ public class JacksonByteToMessageDecoder extends MessageToMessageDecoder<TextWeb
 	protected void decode(ChannelHandlerContext ctx, TextWebSocketFrame in, List<Object> out) 
 			throws Exception {
 		String text = in.text();
-		int bytesCount = text.length();
 		Object value = deserializer.deserialize(text);
 		out.add(value);
-		EzyBytesReceived delegate = (EzyBytesReceived)ctx.pipeline().get("handler");
-		delegate.bytesReceived(bytesCount);
 	}
 }

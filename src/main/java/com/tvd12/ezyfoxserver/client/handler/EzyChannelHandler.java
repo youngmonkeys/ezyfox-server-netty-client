@@ -63,7 +63,7 @@ public abstract class EzyChannelHandler extends SimpleChannelInboundHandler<EzyA
 	
 	@Override
 	public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
-		logger.debug("handler removed");
+		logger.debug("handler channel {} removed", ctx.channel());
 	}
 	
     @Override
