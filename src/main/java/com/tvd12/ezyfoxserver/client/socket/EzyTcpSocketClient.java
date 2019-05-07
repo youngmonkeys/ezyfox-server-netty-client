@@ -6,9 +6,7 @@ import java.net.InetSocketAddress;
  * Created by tavandung12 on 9/20/18.
  */
 
-public class EzyTcpSocketClient
-        extends EzyAbstractSocketClient
-        implements EzyDisconnectionDelegate {
+public class EzyTcpSocketClient extends EzyAbstractSocketClient {
 	
 	protected EzyTcpSocketClient(Builder builder) {
 		super(builder);

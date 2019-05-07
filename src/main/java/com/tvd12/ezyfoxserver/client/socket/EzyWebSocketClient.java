@@ -9,9 +9,7 @@ import com.tvd12.ezyfoxserver.client.util.EzyURIs;
  * Created by tavandung12 on 9/20/18.
  */
 
-public class EzyWebSocketClient
-        extends EzyAbstractSocketClient
-        implements EzyDisconnectionDelegate {
+public class EzyWebSocketClient extends EzyAbstractSocketClient {
 
 	protected URI uri;
 	

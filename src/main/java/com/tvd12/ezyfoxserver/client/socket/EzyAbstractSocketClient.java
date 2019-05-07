@@ -146,6 +146,7 @@ public abstract class EzyAbstractSocketClient
         disconnect();
         resetComponents();
         socketThread = new EzySocketThread(sleepTime);
+        dataHandler.setDisconnected(false);
         socketThread.start();
     }
 
