@@ -20,8 +20,8 @@ import com.tvd12.ezyfoxserver.client.request.EzyRequest;
 public class EzyPingSchedule extends EzyLoggable {
 
 	private final EzyClient client;
-    private EzySocketDataHandler dataHandler;
     private final EzyPingManager pingManager;
+    private EzySocketDataHandler dataHandler;
     private ScheduledFuture<?> scheduledFuture;
     private ScheduledExecutorService scheduledExecutor;
 
