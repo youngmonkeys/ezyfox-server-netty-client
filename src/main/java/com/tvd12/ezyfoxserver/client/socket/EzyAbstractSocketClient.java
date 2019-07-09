@@ -124,7 +124,7 @@ public abstract class EzyAbstractSocketClient
         long reconnectSleepTime = getReconnectSleepTime();
         handleConnection(reconnectSleepTime);
         reconnectCount++;
-        getLogger().info("try reconnect to server: " + reconnectCount + ", wating time: " + reconnectSleepTime);
+        logger.info("try reconnect to server: {}, wating time: {}", reconnectCount, reconnectSleepTime);
         EzyEvent tryConnectEvent = new EzyTryConnectEvent(reconnectCount);
         EzySocketEvent tryConnectSocketEvent
                 = new EzySimpleSocketEvent(EzySocketEventType.EVENT, tryConnectEvent);
@@ -151,7 +151,7 @@ public abstract class EzyAbstractSocketClient
     }
 
     protected boolean connect0() throws Exception {
-        getLogger().info("connecting to server ...");
+        logger.info("connecting to server ...");
         boolean success = false;
         try {
         		startConnectTime = System.currentTimeMillis();
@@ -182,7 +182,7 @@ public abstract class EzyAbstractSocketClient
 	        else {
 	            event = EzyConnectionFailureEvent.unknown();
 	        }
-	        logger.info("connect to: " + getConnectionString() + " error", e);
+	        logger.info("connect to: {} error", getConnectionString(), e);
 	        EzySocketEvent socketEvent = new EzySimpleSocketEvent(EzySocketEventType.EVENT, event);
 		    dataHandler.fireSocketEvent(socketEvent);
 	    }
@@ -232,11 +232,11 @@ public abstract class EzyAbstractSocketClient
                 .append(data)
                 .build();
         if(!unloggableCommands.contains(cmd))
-            getLogger().debug("send command: " + cmd + " and data: " + data);
+            logger.debug("send command: {} and data: {}", cmd, data);
         try {
         		socketChannel.writeAndFlush(array);
         } catch (Exception e) {
-            getLogger().error("send cmd: " + cmd + " with data: " + data + " error", e);
+            logger.error("send cmd: {} with data: {} error", cmd, data, e);
         }
     }
     
@@ -254,7 +254,7 @@ public abstract class EzyAbstractSocketClient
         		socketChannel.disconnect();
             socketChannel.close();
         } catch (Exception e) {
-            getLogger().error("close socket channel: " + socketChannel + " error", e);
+            logger.error("close socket channel: {} error", socketChannel, e);
         }
     }
 
@@ -290,13 +290,13 @@ public abstract class EzyAbstractSocketClient
 
         private void handleConnect(long sleepTime) {
             try {
-                getLogger().info("sleeping " + sleepTime + "ms before connect to server");
+                logger.info("sleeping {} ms before connect to server", sleepTime);
                 sleepBeforeConnect(sleepTime);
                 if(!cancelled)
                     connect0();
             }
             catch (Exception e) {
-                getLogger().error("start connect to server error", e);
+                logger.error("start connect to server error", e);
             }
         }
 
