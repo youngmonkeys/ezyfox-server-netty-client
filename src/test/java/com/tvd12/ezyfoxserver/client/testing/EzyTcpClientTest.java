@@ -8,12 +8,12 @@ public class EzyTcpClientTest {
 	public void test() throws Exception {
 		EzyClientConfig config = EzyClientConfig.builder()
 				.clientName("hello-word")
-				.zoneName("hello-world")
+				.zoneName("example")
 				.build();
 		
 		EzyTcpClient client = new EzyTcpClient(config);
 		ClientSetup.getInstance().setup(client);
-		client.connect("127.0.0.1", 3005);
+		client.connect("ws.tvd12.com", 3005);
 		while(true) {
 			client.processEvents();
 			Thread.sleep(5);

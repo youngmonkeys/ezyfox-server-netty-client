@@ -2,8 +2,6 @@ package com.tvd12.ezyfoxserver.client.socket;
 
 import java.net.URI;
 
-import com.tvd12.ezyfoxserver.client.handler.EzyChannelHandler;
-import com.tvd12.ezyfoxserver.client.handler.EzyWebSocketChannelHandler;
 import com.tvd12.ezyfoxserver.client.util.EzyURIs;
 
 import io.netty.channel.Channel;

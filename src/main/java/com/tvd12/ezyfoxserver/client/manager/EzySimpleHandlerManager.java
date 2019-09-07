@@ -1,5 +1,8 @@
 package com.tvd12.ezyfoxserver.client.manager;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import com.tvd12.ezyfoxserver.client.EzyClient;
 import com.tvd12.ezyfoxserver.client.constant.EzyCommand;
 import com.tvd12.ezyfoxserver.client.constant.EzyConstant;
@@ -14,12 +17,12 @@ import com.tvd12.ezyfoxserver.client.handler.EzyDataHandlers;
 import com.tvd12.ezyfoxserver.client.handler.EzyDisconnectionHandler;
 import com.tvd12.ezyfoxserver.client.handler.EzyEventHandler;
 import com.tvd12.ezyfoxserver.client.handler.EzyEventHandlers;
+import com.tvd12.ezyfoxserver.client.handler.EzyLoginErrorHandler;
 import com.tvd12.ezyfoxserver.client.handler.EzyLoginSuccessHandler;
 import com.tvd12.ezyfoxserver.client.handler.EzyPongHandler;
 import com.tvd12.ezyfoxserver.client.socket.EzyPingSchedule;
 
-import java.util.HashMap;
-import java.util.Map;
+import lombok.Getter;
 
 /**
  * Created by tavandung12 on 10/9/18.
@@ -30,13 +33,15 @@ public class EzySimpleHandlerManager implements EzyHandlerManager {
 
     private final EzyClient client;
     private final EzyPingSchedule pingSchedule;
+    @Getter
     private final EzyEventHandlers eventHandlers;
+    @Getter
     private final EzyDataHandlers dataHandlers;
     private final Map<String, EzyAppDataHandlers> appDataHandlerss;
 
-    public EzySimpleHandlerManager(EzyClient client, EzyPingSchedule pingSchedule) {
+    public EzySimpleHandlerManager(EzyClient client) {
         this.client = client;
-        this.pingSchedule = pingSchedule;
+        this.pingSchedule = client.getPingSchedule();
         this.eventHandlers = newEventHandlers();
         this.dataHandlers = newDataHandlers();
         this.appDataHandlerss = new HashMap<>();
@@ -54,6 +59,7 @@ public class EzySimpleHandlerManager implements EzyHandlerManager {
         EzyDataHandlers handlers = new EzyDataHandlers(client, pingSchedule);
         handlers.addHandler(EzyCommand.PONG, new EzyPongHandler());
         handlers.addHandler(EzyCommand.LOGIN, new EzyLoginSuccessHandler());
+        handlers.addHandler(EzyCommand.LOGIN_ERROR, new EzyLoginErrorHandler());
         handlers.addHandler(EzyCommand.APP_ACCESS, new EzyAccessAppHandler());
         handlers.addHandler(EzyCommand.APP_REQUEST, new EzyAppResponseHandler());
         return handlers;

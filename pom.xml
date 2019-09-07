@@ -19,15 +19,10 @@
 		<ezy.jackson.version>1.0.0</ezy.jackson.version>
 		<ezy.msgpack.version>1.0.0</ezy.msgpack.version>
 		<ezy.server.core.version>1.0.0</ezy.server.core.version>
-		<netty.all.version>4.1.18.Final</netty.all.version>
+		<netty.all.version>4.1.38.Final</netty.all.version>
 	</properties>
 	
 	<dependencies>
-		<dependency>
-			<groupId>com.tvd12</groupId>
-			<artifactId>ezyfox-server-core</artifactId>
-			<version>${ezy.server.core.version}</version>
-		</dependency>
 		<dependency>
 			<groupId>com.tvd12</groupId>
 			<artifactId>ezyfox-jackson</artifactId>

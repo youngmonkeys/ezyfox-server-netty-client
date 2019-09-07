@@ -8,7 +8,7 @@ public class HandshakeHandler extends EzyHandshakeHandler {
 
 	@Override
 	protected EzyRequest getLoginRequest() {
-		return new EzyLoginRequest("example1", "DungTV", "123456");
+		return new EzyLoginRequest("example", "DungTV", "123456");
 	}
 
 }

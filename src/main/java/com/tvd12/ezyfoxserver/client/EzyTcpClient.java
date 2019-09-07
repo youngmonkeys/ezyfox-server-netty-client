@@ -1,33 +1,29 @@
 package com.tvd12.ezyfoxserver.client;
 
-import com.tvd12.ezyfox.codec.EzyCodecCreator;
-import com.tvd12.ezyfoxserver.client.codec.MsgPackCodecCreator;
 import com.tvd12.ezyfoxserver.client.config.EzyClientConfig;
-import com.tvd12.ezyfoxserver.client.socket.EzyAbstractSocketClient;
+import com.tvd12.ezyfoxserver.client.constant.EzyConnectionType;
+import com.tvd12.ezyfoxserver.client.socket.EzyNettySocketClient;
 import com.tvd12.ezyfoxserver.client.socket.EzyTcpSocketClient;
 
 /**
  * Created by tavandung12 on 9/20/18.
  */
 
-public class EzyTcpClient extends EzyAbstractClient {
+public class EzyTcpClient extends EzyNettyClient {
 
-    public EzyTcpClient(EzyClientConfig config) {
-        super(config);
-    }
     
-    public void connect(String host, int port) {
-		connect(new Object[] {host, port});
-    }
+	public EzyTcpClient(EzyClientConfig config) {
+		super(config);
+	}
 
-    @Override
-    protected EzyCodecCreator newCodecCreator() {
-    		return new MsgPackCodecCreator();
-    }
-    
-    @Override
-    protected EzyAbstractSocketClient.Builder<?> newSocketClientBuilder() {
-    		return EzyTcpSocketClient.builder();
-    }
+	@Override
+	protected EzyNettySocketClient newNettySocketClient() {
+		return new EzyTcpSocketClient();
+	}
+	
+	@Override
+	public EzyConnectionType getConnectionType() {
+		return EzyConnectionType.SOCKET;
+	}
     
 }

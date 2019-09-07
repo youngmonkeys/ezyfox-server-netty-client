@@ -1,8 +1,5 @@
 package com.tvd12.ezyfoxserver.client.socket;
 
-import com.tvd12.ezyfoxserver.client.handler.EzyChannelHandler;
-import com.tvd12.ezyfoxserver.client.handler.EzySocketChannelHandler;
-
 public class EzySocketChannelInitializer extends EzyAbstractChannelInitializer {
 
 	protected EzySocketChannelInitializer(Builder builder) {

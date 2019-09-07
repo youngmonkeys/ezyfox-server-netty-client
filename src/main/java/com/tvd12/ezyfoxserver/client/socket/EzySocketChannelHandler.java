@@ -1,10 +1,4 @@
-package com.tvd12.ezyfoxserver.client.handler;
-
-import com.tvd12.ezyfoxserver.client.event.EzyConnectionSuccessEvent;
-import com.tvd12.ezyfoxserver.client.event.EzyEvent;
-import com.tvd12.ezyfoxserver.client.socket.EzySimpleSocketEvent;
-import com.tvd12.ezyfoxserver.client.socket.EzySocketEvent;
-import com.tvd12.ezyfoxserver.client.socket.EzySocketEventType;
+package com.tvd12.ezyfoxserver.client.socket;
 
 import io.netty.channel.ChannelHandlerContext;
 
@@ -17,9 +11,7 @@ public class EzySocketChannelHandler extends EzyChannelHandler {
 	@Override
 	public void channelActive(ChannelHandlerContext ctx) throws Exception {
 		super.channelActive(ctx);
-		EzyEvent event = new EzyConnectionSuccessEvent();
-		EzySocketEvent socketEvent = new EzySimpleSocketEvent(EzySocketEventType.EVENT, event);
-		socketEventQueue.add(socketEvent);
+		connectionActive(ctx);
 	}
 	
 	public static Builder builder() {

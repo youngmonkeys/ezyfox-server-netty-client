@@ -1,20 +1,23 @@
 package com.tvd12.ezyfoxserver.client.socket;
 
-import java.net.InetSocketAddress;
+import com.tvd12.ezyfox.codec.EzyCodecCreator;
+import com.tvd12.ezyfoxserver.client.codec.MsgPackCodecCreator;
 
 /**
  * Created by tavandung12 on 9/20/18.
  */
 
-public class EzyTcpSocketClient extends EzyAbstractSocketClient {
+public class EzyTcpSocketClient extends EzyNettySocketClient {
 	
-	protected EzyTcpSocketClient(Builder builder) {
-		super(builder);
-	}
-
 	@Override
-	protected void preConnect(Object... args) {
-		serverAddress = new InetSocketAddress((String)args[0], (Integer)args[1]);
+	protected void parseConnectionArguments(Object... args) {
+		this.host = (String)args[0];
+		this.port = (Integer)args[1];
+	}
+	
+	@Override
+	protected EzyCodecCreator newCodecCreator() {
+		return new MsgPackCodecCreator();
 	}
 	
 	@Override
@@ -22,16 +25,4 @@ public class EzyTcpSocketClient extends EzyAbstractSocketClient {
 		return EzySocketChannelInitializer.builder();
 	}
 	
-	public static Builder builder() {
-		return new Builder();
-	}
-	
-	public static class Builder extends EzyAbstractSocketClient.Builder<Builder> {
-
-		@Override
-		public EzySocketClient build() {
-			return new EzyTcpSocketClient(this);
-		}
-		
-	}
 }

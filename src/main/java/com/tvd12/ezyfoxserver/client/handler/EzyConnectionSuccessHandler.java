@@ -16,13 +16,9 @@ public class EzyConnectionSuccessHandler extends EzyAbstractEventHandler {
 	
     @Override
     public final void handle(EzyEvent event) {
-        updateConnectionStatus();
+    		client.setStatus(EzyConnectionStatus.CONNECTED);
         sendHandshakeRequest();
         postHandle();
-    }
-
-    private void updateConnectionStatus() {
-        client.setStatus(EzyConnectionStatus.CONNECTED);
     }
 
     protected void postHandle() {
@@ -37,7 +33,7 @@ public class EzyConnectionSuccessHandler extends EzyAbstractEventHandler {
         EzyHandshakeRequest request = new EzyHandshakeRequest(
                 getClientId(),
                 getClientKey(),
-                "NETTY",
+                "NETTY-" + client.getConnectionType(),
                 "1.0.0",
                 isEnableEncryption(),
                 getStoredToken()

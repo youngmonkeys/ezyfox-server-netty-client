@@ -1,19 +1,13 @@
 /**
  * 
  */
-package com.tvd12.ezyfoxserver.client.handler;
+package com.tvd12.ezyfoxserver.client.socket;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.entity.EzyArray;
-import com.tvd12.ezyfoxserver.client.socket.EzyResponse;
-import com.tvd12.ezyfoxserver.client.socket.EzySimpleResponse;
-import com.tvd12.ezyfoxserver.client.socket.EzySimpleSocketEvent;
-import com.tvd12.ezyfoxserver.client.socket.EzySocketEvent;
-import com.tvd12.ezyfoxserver.client.socket.EzySocketEventQueue;
-import com.tvd12.ezyfoxserver.client.socket.EzySocketEventType;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -24,11 +18,13 @@ import io.netty.channel.SimpleChannelInboundHandler;
  */
 public abstract class EzyChannelHandler extends SimpleChannelInboundHandler<EzyArray> {
 
-	protected final EzySocketEventQueue socketEventQueue;
 	protected final Logger logger;
+	protected final EzySocketReader socketReader;
+	protected final EzyConnectionFuture connectionFuture;
 	
 	public EzyChannelHandler(Builder<?> builder) {
-		this.socketEventQueue = builder.socketEventQueue;
+		this.socketReader = builder.socketReader;
+		this.connectionFuture = builder.connectionFuture;
 		this.logger = LoggerFactory.getLogger(getClass());
 	}
 	
@@ -39,6 +35,7 @@ public abstract class EzyChannelHandler extends SimpleChannelInboundHandler<EzyA
 	
 	protected void connectionActive(ChannelHandlerContext ctx) {
 		logger.debug("connection of channel {} active", ctx.channel());
+		connectionFuture.setSuccess(true);
 	}
 	
 	@Override
@@ -68,19 +65,23 @@ public abstract class EzyChannelHandler extends SimpleChannelInboundHandler<EzyA
 	
     @Override
     protected void channelRead0(ChannelHandlerContext ctx, EzyArray msg) throws Exception {
-    		EzyResponse response = new EzySimpleResponse(msg);
-    		EzySocketEvent socketEvent = new EzySimpleSocketEvent(EzySocketEventType.RESPONSE, response);
-    		socketEventQueue.add(socketEvent);
+    		socketReader.addMessage(msg);
     }
     
     @SuppressWarnings("unchecked")
     public abstract static class Builder<B extends Builder<B>> implements EzyBuilder<EzyChannelHandler> {
     	
-    		protected EzySocketEventQueue socketEventQueue;
+    		protected EzySocketReader socketReader;
+    		protected EzyConnectionFuture connectionFuture;
     		
-		public B socketEventQueue(EzySocketEventQueue socketEventQueue) {
-    			this.socketEventQueue = socketEventQueue;
+		public B socketReader(EzySocketReader socketReader) {
+    			this.socketReader = socketReader;
     			return (B)this;
     		}
+		
+		public B connectionFuture(EzyConnectionFuture connectionFuture) {
+			this.connectionFuture = connectionFuture;
+			return (B)this;
+		}
     }
 }

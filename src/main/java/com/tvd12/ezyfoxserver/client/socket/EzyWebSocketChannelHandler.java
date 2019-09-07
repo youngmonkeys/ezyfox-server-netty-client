@@ -1,13 +1,7 @@
 /**
  * 
  */
-package com.tvd12.ezyfoxserver.client.handler;
-
-import com.tvd12.ezyfoxserver.client.event.EzyConnectionSuccessEvent;
-import com.tvd12.ezyfoxserver.client.event.EzyEvent;
-import com.tvd12.ezyfoxserver.client.socket.EzySimpleSocketEvent;
-import com.tvd12.ezyfoxserver.client.socket.EzySocketEvent;
-import com.tvd12.ezyfoxserver.client.socket.EzySocketEventType;
+package com.tvd12.ezyfoxserver.client.socket;
 
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
@@ -27,14 +21,6 @@ public class EzyWebSocketChannelHandler extends EzyChannelHandler {
 		logger.debug("channel: {} event: {} trigged", ctx.channel(), evt);
 		if(evt.equals(WebSocketClientProtocolHandler.ClientHandshakeStateEvent.HANDSHAKE_COMPLETE))
 			connectionActive(ctx);
-	}
-	
-	@Override
-	protected void connectionActive(ChannelHandlerContext ctx) {
-		super.connectionActive(ctx);
-		EzyEvent event = new EzyConnectionSuccessEvent();
-		EzySocketEvent socketEvent = new EzySimpleSocketEvent(EzySocketEventType.EVENT, event);
-		socketEventQueue.add(socketEvent);
 	}
 	
 	public static Builder builder() {

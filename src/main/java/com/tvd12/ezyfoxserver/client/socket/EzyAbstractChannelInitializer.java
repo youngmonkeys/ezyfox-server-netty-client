@@ -3,7 +3,6 @@ package com.tvd12.ezyfoxserver.client.socket;
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.codec.EzyCodecCreator;
 import com.tvd12.ezyfoxserver.client.codec.EzyCombinedCodec;
-import com.tvd12.ezyfoxserver.client.handler.EzyChannelHandler;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -14,11 +13,13 @@ import io.netty.channel.ChannelPipeline;
 public abstract class EzyAbstractChannelInitializer extends ChannelInitializer<Channel> {
 
 	protected final EzyCodecCreator codecCreator;
-	protected final EzySocketEventQueue socketEventQueue;
+	protected final EzySocketReader socketReader;
+	protected final EzyConnectionFuture connectionFuture;
 	
 	protected EzyAbstractChannelInitializer(Builder<?> builder) {
 		this.codecCreator = builder.codecCreator;
-		this.socketEventQueue = builder.socketEventQueue;
+		this.socketReader = builder.socketReader;
+		this.connectionFuture = builder.connectionFuture; 
 	}
 	
 	@Override
@@ -40,9 +41,10 @@ public abstract class EzyAbstractChannelInitializer extends ChannelInitializer<C
 	}
 	
 	private EzyChannelHandler createDataHandler() {
-		EzyChannelHandler.Builder<?> handlerBuilder = newDataHandlerBuilder();
-		handlerBuilder.socketEventQueue(socketEventQueue);
-		EzyChannelHandler handler = handlerBuilder.build();
+		EzyChannelHandler handler = newDataHandlerBuilder()
+				.socketReader(socketReader)
+				.connectionFuture(connectionFuture)
+				.build();
 		return handler;
 	}
 	
@@ -53,16 +55,22 @@ public abstract class EzyAbstractChannelInitializer extends ChannelInitializer<C
 			implements EzyBuilder<EzyAbstractChannelInitializer> {
 		
 		protected EzyCodecCreator codecCreator;
-		protected EzySocketEventQueue socketEventQueue;
+		protected EzySocketReader socketReader;
+		protected EzyConnectionFuture connectionFuture;
 		
 		public B codecCreator(EzyCodecCreator codecCreator) {
 			this.codecCreator = codecCreator;
 			return (B) this;
 		}
 		
-		public B socketEventQueue(EzySocketEventQueue socketEventQueue) {
-			this.socketEventQueue = socketEventQueue;
+		public B socketReader(EzySocketReader socketReader) {
+			this.socketReader = socketReader;
 			return (B) this;
+		}
+		
+		public B connectionFuture(EzyConnectionFuture connectionFuture) {
+			this.connectionFuture = connectionFuture;
+			return (B)this;
 		}
 	}
  }
