@@ -68,7 +68,7 @@ public abstract class EzyNettySocketClient extends EzySocketClient {
 	}
 
 	protected EventLoopGroup newLoopGroup() {
-		return new NioEventLoopGroup(1, EzyExecutors.newThreadFactory("client-event-loop-group"));
+		return new NioEventLoopGroup(2, EzyExecutors.newThreadFactory("client-event-loop"));
 	}
 	
 	protected ChannelInitializer<Channel> newChannelInitializer() {
@@ -105,6 +105,7 @@ public abstract class EzyNettySocketClient extends EzySocketClient {
             if (socket != null) {
             		this.socket.disconnect();
                 this.socket.close();
+                this.socket.eventLoop().shutdownGracefully();
             }
         }
         catch (Exception e) {
