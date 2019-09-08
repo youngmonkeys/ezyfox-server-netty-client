@@ -38,6 +38,7 @@ public class EzySocketReader {
 	}
 	
 	public void reset() {
+		this.dataQueue.clear();
 		this.active = true;
 		this.stopped = false;
 	}
