@@ -33,7 +33,6 @@ public class EzyPingSchedule extends EzyLoggable {
         this.request = new EzyPingRequest();
         this.pingManager = client.getPingManager();
         this.scheduledExecutor = newScheduledExecutor();
-
     }
 
     protected ScheduledExecutorService newScheduledExecutor() {
