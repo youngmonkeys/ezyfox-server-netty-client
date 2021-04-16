@@ -6,7 +6,6 @@ import com.tvd12.ezyfox.codec.EzyMessageToBytes;
 import com.tvd12.ezyfox.codec.EzyObjectToMessage;
 import com.tvd12.ezyfox.codec.MsgPackObjectToMessage;
 import com.tvd12.ezyfox.codec.MsgPackSimpleDeserializer;
-import com.tvd12.ezyfoxserver.client.codec.EzySimpleMessageToBytes;
 
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelOutboundHandler;

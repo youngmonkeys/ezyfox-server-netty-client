@@ -24,10 +24,6 @@ import com.tvd12.ezyfoxserver.client.handler.EzyDataHandlers;
 import com.tvd12.ezyfoxserver.client.handler.EzyEventHandlers;
 import com.tvd12.ezyfoxserver.client.manager.EzyHandlerManager;
 import com.tvd12.ezyfoxserver.client.manager.EzyPingManager;
-import com.tvd12.ezyfoxserver.client.socket.EzyBlockingPacketQueue;
-import com.tvd12.ezyfoxserver.client.socket.EzyPacketQueue;
-import com.tvd12.ezyfoxserver.client.socket.EzyPingSchedule;
-import com.tvd12.ezyfoxserver.client.socket.EzySocketEventQueue;
 import com.tvd12.ezyfoxserver.client.util.EzyValueStack;
 
 /**
@@ -70,7 +66,7 @@ public abstract class EzySocketClient extends EzyLoggable implements EzySocketDe
     public void connectTo(Object... args) {
         EzySocketStatus status = socketStatuses.last();
         if (!isSocketConnectable(status)) {
-        		logger.warn("socket is connecting...");
+        	logger.warn("socket is connecting...");
             return;
         }
         this.socketStatuses.push(EzySocketStatus.CONNECTING);
@@ -159,7 +155,7 @@ public abstract class EzySocketClient extends EzyLoggable implements EzySocketDe
     protected abstract void createAdapters();
 
     protected void updateAdapters() {
-    		socketReader.reset();
+    	socketReader.reset();
         socketWriter.setPacketQueue(packetQueue);
     }
 
@@ -201,9 +197,9 @@ public abstract class EzySocketClient extends EzyLoggable implements EzySocketDe
     }
 
     public void processEventMessages() {
+    	processReceivedMessages();
         processStatuses();
         processEvents();
-        processReceivedMessages();
     }
 
     protected void processStatuses() {
@@ -230,11 +226,15 @@ public abstract class EzySocketClient extends EzyLoggable implements EzySocketDe
 
     protected void processEvents() {
         socketEventQueue.popAll(localEventQueue);
-        for (int i = 0; i < localEventQueue.size(); ++i) {
-            EzyEvent evt = localEventQueue.get(i);
-            eventHandlers.handle(evt);
+        try {
+	        for (int i = 0; i < localEventQueue.size(); ++i) {
+	            EzyEvent evt = localEventQueue.get(i);
+	            eventHandlers.handle(evt);
+	        }
         }
-        localEventQueue.clear();
+        finally {
+        	localEventQueue.clear();
+		}
     }
 
     protected void processReceivedMessages() {
@@ -258,10 +258,14 @@ public abstract class EzySocketClient extends EzyLoggable implements EzySocketDe
     protected void processReceivedMessages0() {
         pingManager.setLostPingCount(0);
         socketReader.popMessages(localMessageQueue);
-        for (int i = 0; i < localMessageQueue.size(); ++i) {
-            processReceivedMessage(localMessageQueue.get(i));
+        try {
+        	for (int i = 0; i < localMessageQueue.size(); ++i) {
+                processReceivedMessage(localMessageQueue.get(i));
+            }
         }
-        localMessageQueue.clear();
+        finally {
+        	localMessageQueue.clear();
+		}
     }
 
     protected void processReceivedMessage(EzyArray message) {

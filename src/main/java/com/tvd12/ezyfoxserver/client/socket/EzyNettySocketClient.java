@@ -7,7 +7,6 @@ import java.net.UnknownHostException;
 import com.tvd12.ezyfox.codec.EzyCodecCreator;
 import com.tvd12.ezyfox.concurrent.EzyExecutors;
 import com.tvd12.ezyfoxserver.client.constant.EzyConnectionFailedReason;
-import com.tvd12.ezyfoxserver.client.socket.EzyAbstractChannelInitializer;
 
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
