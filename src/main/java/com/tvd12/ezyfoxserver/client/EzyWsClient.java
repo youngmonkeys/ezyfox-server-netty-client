@@ -17,12 +17,17 @@ public class EzyWsClient extends EzyNettyClient {
     
     @Override
     protected EzyNettySocketClient newNettySocketClient() {
-    		return new EzyWebSocketClient();
+    	return new EzyWebSocketClient();
+    }
+    
+    @Override
+    public void connect(String url) {
+    	this.connectTo(url);
     }
 
     @Override
     public EzyConnectionType getConnectionType() {
-    		return EzyConnectionType.WEBSOCKET;
+    	return EzyConnectionType.WEBSOCKET;
     }
     
 }
