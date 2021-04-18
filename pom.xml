@@ -11,7 +11,7 @@
 
 	<artifactId>ezyfox-server-netty-client</artifactId>
 	
-	<version>1.0.2</version>
+	<version>1.0.3</version>
 	<name>ezyfox-server-netty-client</name>
 	<url>http://maven.apache.org</url>
 
@@ -21,11 +21,6 @@
 	</properties>
 	
 	<dependencies>
-		<dependency>
-			<groupId>com.tvd12</groupId>
-			<artifactId>ezyfox-jackson</artifactId>
-			<version>${ezy.jackson.version}</version>
-		</dependency>
 		<dependency>
 			<groupId>com.tvd12</groupId>
 			<artifactId>ezyfox-msgpack</artifactId>

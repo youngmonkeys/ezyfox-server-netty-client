@@ -2,6 +2,7 @@ package com.tvd12.ezyfoxserver.client.socket;
 
 import static com.tvd12.ezyfoxserver.client.constant.EzySocketStatuses.isSocketConnectable;
 
+import java.net.BindException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
@@ -49,8 +50,7 @@ public class EzyUdpSocketClient extends EzyLoggable {
 	
 	public boolean reconnect() {
 		EzySocketStatus status = socketStatuses.last();
-        if (status != EzySocketStatus.CONNECT_FAILED && 
-        		status != EzySocketStatus.NOT_CONNECT) {
+        if (status != EzySocketStatus.CONNECT_FAILED) {
             return false;
         }
         logger.info("udp socket is re-connecting...");
@@ -63,6 +63,18 @@ public class EzyUdpSocketClient extends EzyLoggable {
 	}
 	
 	protected void connect0() {
+		while(true) {
+			try {
+				connect1();
+				break;
+			}
+			catch (BindException e) {
+				logger.warn("fail to open udp port, re-try again");
+			}
+		}
+	}
+	
+	protected void connect1() throws BindException {
 		try {
 			clearAdapters();
 	        createAdapters();
@@ -93,6 +105,9 @@ public class EzyUdpSocketClient extends EzyLoggable {
 			});
 			newThread.setName("udp-reconnect");
 			newThread.start();
+		}
+		catch (BindException e) {
+			throw e;
 		}
 		catch (Exception e) {
 			throw new IllegalStateException("udp can't connect to: " + serverAddress,  e);
