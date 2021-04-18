@@ -10,7 +10,10 @@ import com.tvd12.ezyfox.codec.MsgPackSimpleDeserializer;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelOutboundHandler;
 
-public class MsgPackCodecCreator implements EzyCodecCreator {
+public class MsgPackCodecCreator implements 
+		EzyCodecCreator, 
+		EzyMessageToBytesFetcher, 
+		EzyObjectToMessageFetcher {
 
 	protected final EzyMessageToBytes messageToBytes;
 	protected final EzyObjectToMessage objectToMessage; 
@@ -30,6 +33,16 @@ public class MsgPackCodecCreator implements EzyCodecCreator {
 	@Override
 	public ChannelOutboundHandler newEncoder() {
 		return new MsgPackMessageToByteEncoder(messageToBytes, objectToMessage);
+	}
+	
+	@Override
+	public EzyMessageToBytes getMessageToBytes() {
+		return messageToBytes;
+	}
+	
+	@Override
+	public EzyObjectToMessage getObjectToMessage() {
+		return objectToMessage;
 	}
 
 }

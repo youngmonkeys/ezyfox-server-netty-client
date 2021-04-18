@@ -22,7 +22,8 @@ public enum EzyCommand implements EzyConstant {
 	APP_REQUEST_ERROR(35, 10),
 	PLUGIN_INFO(40, 10),
     PLUGIN_REQUEST_BY_NAME(41, 10),
-    PLUGIN_REQUEST_BY_ID(42, 10);
+    PLUGIN_REQUEST_BY_ID(42, 10),
+    UDP_HANDSHAKE(50, 10);
 
 	private final int id;
 	private final int priority;

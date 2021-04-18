@@ -20,14 +20,19 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 public abstract class EzyNettySocketClient extends EzySocketClient {
 
 	protected Channel socket;
+	protected EzyCodecCreator codecCreator;
 	protected EzyConnectionFuture connectionFuture;
+	
+	{
+		codecCreator = newCodecCreator();
+	}
 	
 	@Override
 	protected boolean connectNow() {
         boolean success = false;
         try {
-        		connectionFuture = new EzyConnectionFuture();
-        		EventLoopGroup eventLoopGroup = newLoopGroup();
+    		connectionFuture = new EzyConnectionFuture();
+    		EventLoopGroup eventLoopGroup = newLoopGroup();
 	        Bootstrap b = newBootstrap(eventLoopGroup);
 	        ChannelFuture channelFuture = b.connect();
 	        channelFuture.syncUninterruptibly();
@@ -72,7 +77,7 @@ public abstract class EzyNettySocketClient extends EzySocketClient {
 	
 	protected ChannelInitializer<Channel> newChannelInitializer() {
 		EzyAbstractChannelInitializer channelInitializer = newChannelInitializerBuilder()
-				.codecCreator(newCodecCreator())
+				.codecCreator(codecCreator)
 				.socketReader(socketReader)
 				.connectionFuture(connectionFuture)
 				.build();

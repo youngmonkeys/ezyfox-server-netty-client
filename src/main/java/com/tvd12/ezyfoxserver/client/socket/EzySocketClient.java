@@ -30,12 +30,16 @@ import com.tvd12.ezyfoxserver.client.util.EzyValueStack;
  * Created by tavandung12 on 9/30/18.
  */
 
-public abstract class EzySocketClient extends EzyLoggable implements EzySocketDelegate {
+public abstract class EzySocketClient 
+		extends EzyLoggable 
+		implements EzyISocketClient, EzySocketDelegate {
     protected String host;
     protected int port;
     protected int reconnectCount;
     protected long connectTime;
     protected int disconnectReason;
+    protected long sessionId;
+    protected String sessionToken;
     protected EzyReconnectConfig reconnectConfig;
     protected EzyHandlerManager handlerManager;
     protected Set<Object> unloggableCommands;
@@ -54,7 +58,7 @@ public abstract class EzySocketClient extends EzyLoggable implements EzySocketDe
     protected final EzyValueStack<EzySocketStatus> socketStatuses;
 
     public EzySocketClient() {
-    		this.socketReader = new EzySocketReader();
+    	this.socketReader = new EzySocketReader();
         this.packetQueue = new EzyBlockingPacketQueue();
         this.socketEventQueue = new EzySocketEventQueue();
         this.localEventQueue = new ArrayList<>();
@@ -63,6 +67,7 @@ public abstract class EzySocketClient extends EzyLoggable implements EzySocketDe
         this.socketStatuses = new EzyValueStack<>(EzySocketStatus.NOT_CONNECT);
     }
 
+    @Override
     public void connectTo(Object... args) {
         EzySocketStatus status = socketStatuses.last();
         if (!isSocketConnectable(status)) {
@@ -77,6 +82,7 @@ public abstract class EzySocketClient extends EzyLoggable implements EzySocketDe
     
     protected abstract void parseConnectionArguments(Object... args);
 
+    @Override
     public boolean reconnect() {
         EzySocketStatus status = socketStatuses.last();
         if (!isSocketReconnectable(status)) {
@@ -171,11 +177,14 @@ public abstract class EzySocketClient extends EzyLoggable implements EzySocketDe
         if (adapter != null)
             adapter.stop();
     }
+    
+    protected void clearComponents(int disconnectReason) {}
 
     protected abstract void resetSocket();
 
     protected abstract void closeSocket();
 
+    @Override
     public void onDisconnected(int reason) {
         pingSchedule.stop();
         packetQueue.clear();
@@ -183,13 +192,21 @@ public abstract class EzySocketClient extends EzyLoggable implements EzySocketDe
         socketEventQueue.clear();
         closeSocket();
         clearAdapters();
+        clearComponents(reason);
         socketStatuses.push(EzySocketStatus.DISCONNECTED);
     }
 
+    @Override
     public void disconnect(int reason) {
         if (socketStatuses.last() != EzySocketStatus.CONNECTED)
             return;
         onDisconnected(disconnectReason = reason);
+    }
+    
+    @Override
+    public void close() {
+    	disconnect(EzyDisconnectReason.CLOSE.getId());
+    	pingSchedule.shutdown();
     }
 
     public void sendMessage(EzyArray message) {
@@ -257,7 +274,7 @@ public abstract class EzySocketClient extends EzyLoggable implements EzySocketDe
 
     protected void processReceivedMessages0() {
         pingManager.setLostPingCount(0);
-        socketReader.popMessages(localMessageQueue);
+        popReadMessages();
         try {
         	for (int i = 0; i < localMessageQueue.size(); ++i) {
                 processReceivedMessage(localMessageQueue.get(i));
@@ -266,6 +283,10 @@ public abstract class EzySocketClient extends EzyLoggable implements EzySocketDe
         finally {
         	localMessageQueue.clear();
 		}
+    }
+    
+    protected void popReadMessages() {
+    	socketReader.popMessages(localMessageQueue);
     }
 
     protected void processReceivedMessage(EzyArray message) {
@@ -295,6 +316,14 @@ public abstract class EzySocketClient extends EzyLoggable implements EzySocketDe
     public int getPort() {
         return this.port;
     }
+    
+    public void setSessionId(long sessionId) {
+		this.sessionId = sessionId;
+	}
+    
+    public void setSessionToken(String sessionToken) {
+		this.sessionToken = sessionToken;
+	}
 
     public void setPingManager(EzyPingManager pingManager) {
         this.pingManager = pingManager;

@@ -3,6 +3,7 @@ package com.tvd12.ezyfoxserver.client.socket;
 import com.tvd12.ezyfox.builder.EzyBuilder;
 import com.tvd12.ezyfox.codec.EzyCodecCreator;
 import com.tvd12.ezyfoxserver.client.codec.EzyCombinedCodec;
+import com.tvd12.ezyfoxserver.client.constant.EzySocketConstants;
 
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInboundHandlerAdapter;
@@ -34,7 +35,8 @@ public abstract class EzyAbstractChannelInitializer extends ChannelInitializer<C
 	private void initChannel1(Channel ch) throws Exception {
 		ChannelPipeline pipeline = ch.pipeline();
 		ChannelOutboundHandler encoder = (ChannelOutboundHandler) codecCreator.newEncoder();
-		ChannelInboundHandlerAdapter decoder = (ChannelInboundHandlerAdapter) codecCreator.newDecoder(65536);
+		ChannelInboundHandlerAdapter decoder = 
+				(ChannelInboundHandlerAdapter) codecCreator.newDecoder(EzySocketConstants.MAX_RESPONSE_SIZE);
 		pipeline.addLast("codec-1", new EzyCombinedCodec(decoder, encoder));
 		pipeline.addLast("handler", createDataHandler());
 		pipeline.addLast("codec-2", new EzyCombinedCodec(decoder, encoder));

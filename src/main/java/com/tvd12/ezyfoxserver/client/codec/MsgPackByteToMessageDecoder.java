@@ -5,9 +5,12 @@ import static com.tvd12.ezyfox.codec.EzyDecodeState.READ_MESSAGE_CONTENT;
 import static com.tvd12.ezyfox.codec.EzyDecodeState.READ_MESSAGE_HEADER;
 import static com.tvd12.ezyfox.codec.EzyDecodeState.READ_MESSAGE_SIZE;
 
+import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 
+import com.tvd12.ezyfox.codec.EzyByteToObjectDecoder;
 import com.tvd12.ezyfox.codec.EzyDecodeState;
 import com.tvd12.ezyfox.codec.EzyIDecodeState;
 import com.tvd12.ezyfox.codec.EzyMessage;
@@ -19,7 +22,9 @@ import io.netty.handler.codec.ByteToMessageDecoder;
 import lombok.AllArgsConstructor;
 import lombok.Setter;
 
-public class MsgPackByteToMessageDecoder extends ByteToMessageDecoder {
+public class MsgPackByteToMessageDecoder 
+		extends ByteToMessageDecoder
+		implements EzyByteToObjectDecoder {
 
 	protected final Handlers handlers;
 	
@@ -37,6 +42,18 @@ public class MsgPackByteToMessageDecoder extends ByteToMessageDecoder {
 		handlers.handle(ctx, in, out);
 	}
 	
+	@Override
+	public Object decode(EzyMessage message) throws Exception {
+		return handlers.decode(message);
+	}
+	
+	@Override
+	public void decode(ByteBuffer bytes, Queue<EzyMessage> queue) throws Exception {
+		throw new UnsupportedOperationException("unsupported");
+	}
+
+	@Override
+	public void reset() {}
 }
 
 @Setter
@@ -129,8 +146,15 @@ class ReadMessageContent extends AbstractHandler {
 
 class Handlers extends EzyDecodeHandlers {
 	
+	protected final EzyMessageDeserializer deserializer;
+	
 	protected Handlers(Builder builder) {
 		super(builder);
+		this.deserializer = builder.deserializer;
+	}
+	
+	public Object decode(EzyMessage message) {
+		return deserializer.deserialize(message.getContent());
 	}
 	
 	public static Builder builder() {

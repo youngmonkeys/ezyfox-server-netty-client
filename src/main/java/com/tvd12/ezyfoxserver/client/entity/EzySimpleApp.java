@@ -50,6 +50,27 @@ public class EzySimpleApp extends EzyEntity implements EzyApp {
                 .build();
         client.send(EzyCommand.APP_REQUEST, requestData);
     }
+    
+    @Override
+    public void udpSend(EzyRequest request) {
+        String cmd = (String) request.getCommand();
+        EzyData data = request.serialize();
+        udpSend(cmd, data);
+    }
+
+    @Override
+    public void udpSend(String cmd) {
+        udpSend(cmd, EzyEntityFactory.EMPTY_OBJECT);
+    }
+
+    @Override
+    public void udpSend(String cmd, EzyData data) {
+    	EzyArray commandData = EzyEntityFactory.newArray();
+    	commandData.add(cmd, data);
+        EzyArray requestData = EzyEntityFactory.newArray();
+        requestData.add(id, commandData);
+        client.udpSend(EzyCommand.APP_REQUEST, requestData);
+    }
 
     public int getId() {
         return id;
