@@ -57,6 +57,7 @@ public abstract class EzyNettyClient
     protected final EzyRequestSerializer requestSerializer;
 
     protected EzyConnectionStatus status;
+    protected EzyConnectionStatus udpStatus;
     protected final Set<Object> unloggableCommands;
 
     protected final EzySocketClient socketClient;
@@ -209,6 +210,16 @@ public abstract class EzyNettyClient
     @Override
     public void setStatus(EzyConnectionStatus status) {
         this.status = status;
+    }
+    
+    @Override
+    public void setUdpStatus(EzyConnectionStatus status) {
+        this.udpStatus = status;
+    }
+    
+    @Override
+    public EzyConnectionStatus getUdpStatus() {
+    	return udpStatus;
     }
     
     @Override

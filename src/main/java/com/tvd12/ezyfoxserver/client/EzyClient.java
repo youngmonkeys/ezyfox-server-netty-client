@@ -58,6 +58,10 @@ public interface EzyClient {
     
     void setStatus(EzyConnectionStatus status);
     
+    EzyConnectionStatus getUdpStatus();
+    
+    void setUdpStatus(EzyConnectionStatus status);
+    
     void setSessionId(long sessionId);
     
     void setSessionToken(String token);
@@ -82,5 +86,9 @@ public interface EzyClient {
     
     default boolean isConnected() {
     	return getStatus() == EzyConnectionStatus.CONNECTED;
+    }
+    
+    default boolean isUdpConnected() {
+        return getUdpStatus() == EzyConnectionStatus.CONNECTED;
     }
 }
