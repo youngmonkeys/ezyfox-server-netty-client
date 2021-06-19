@@ -32,10 +32,10 @@ public class EzyConnectionSuccessHandler extends EzyAbstractEventHandler {
     protected final EzyRequest newHandshakeRequest() {
         EzyHandshakeRequest request = new EzyHandshakeRequest(
                 getClientId(),
-                getClientKey(),
-                "NETTY-" + client.getConnectionType(),
-                "1.0.0",
-                isEnableEncryption(),
+                generateClientKey(),
+                "NETTY",
+                "1.0.8",
+                false,
                 getStoredToken()
         );
         return request;
@@ -46,9 +46,8 @@ public class EzyConnectionSuccessHandler extends EzyAbstractEventHandler {
         return id;
     }
 
-    protected String getClientKey() {
-        String key = "";
-        return key;
+    protected byte[] generateClientKey() {
+    	return null;
     }
 
     protected boolean isEnableEncryption() {
