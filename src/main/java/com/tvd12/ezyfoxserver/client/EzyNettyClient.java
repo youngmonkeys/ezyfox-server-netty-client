@@ -281,22 +281,22 @@ public abstract class EzyNettyClient
     
     @Override
     public void udpConnect(int port) {
-    	throw new UnsupportedOperationException("only support TCP, use EzyUTClientTest instead");
+    	throw new UnsupportedOperationException("only support TCP, use EzyUTClient instead");
     }
     
     @Override
     public void udpConnect(String host, int port) {
-    	throw new UnsupportedOperationException("only support TCP, use EzyUTClientTest instead");
+    	throw new UnsupportedOperationException("only support TCP, use EzyUTClient instead");
     }
     
     @Override
     public void udpSend(EzyRequest request) {
-    	throw new UnsupportedOperationException("only support TCP, use EzyUTClientTest instead");
+    	throw new UnsupportedOperationException("only support TCP, use EzyUTClient instead");
     }
     
     @Override
 	public void udpSend(EzyCommand cmd, EzyArray data) {
-    	throw new UnsupportedOperationException("only support TCP, use EzyUTClientTest instead");
+    	throw new UnsupportedOperationException("only support TCP, use EzyUTClient instead");
 	}
     
     public void close() {
