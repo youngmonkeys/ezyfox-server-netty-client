@@ -34,7 +34,7 @@ public class EzyConnectionSuccessHandler extends EzyAbstractEventHandler {
                 getClientId(),
                 generateClientKey(),
                 "NETTY",
-                "1.0.8",
+                "1.1.0",
                 false,
                 getStoredToken()
         );
