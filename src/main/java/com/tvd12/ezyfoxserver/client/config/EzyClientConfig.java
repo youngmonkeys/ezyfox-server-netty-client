@@ -10,11 +10,13 @@ public class EzyClientConfig {
 
     private final String zoneName;
     private final String clientName;
+    private final EzyPingConfig ping;
     private final EzyReconnectConfig reconnect;
 
     protected EzyClientConfig(Builder builder) {
         this.zoneName = builder.zoneName;
         this.clientName = builder.clientName;
+        this.ping = builder.pingConfigBuilder.build();
         this.reconnect = builder.reconnectConfigBuilder.build();
     }
 
@@ -27,6 +29,10 @@ public class EzyClientConfig {
             return zoneName;
         return clientName;
     }
+    
+    public EzyPingConfig getPing() {
+		return ping;
+	}
 
     public EzyReconnectConfig getReconnect() {
         return reconnect;
@@ -40,9 +46,11 @@ public class EzyClientConfig {
 
         private String zoneName;
         private String clientName;
+        private final EzyPingConfig.Builder pingConfigBuilder;
         private final EzyReconnectConfig.Builder reconnectConfigBuilder;
 
         public Builder() {
+        	this.pingConfigBuilder = new EzyPingConfig.Builder(this);
             this.reconnectConfigBuilder = new EzyReconnectConfig.Builder(this);
         }
 
@@ -54,6 +62,10 @@ public class EzyClientConfig {
         public Builder clientName(String clientName) {
             this.clientName = clientName;
             return this;
+        }
+        
+        public EzyPingConfig.Builder pingConfigBuilder() {
+        	return pingConfigBuilder;
         }
 
         public EzyReconnectConfig.Builder reconnectConfigBuilder() {
