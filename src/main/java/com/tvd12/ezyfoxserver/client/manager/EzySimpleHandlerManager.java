@@ -38,14 +38,14 @@ public class EzySimpleHandlerManager implements EzyHandlerManager {
     private final EzyEventHandlers eventHandlers;
     @Getter
     private final EzyDataHandlers dataHandlers;
-    private final Map<String, EzyAppDataHandlers> appDataHandlerss;
+    private final Map<String, EzyAppDataHandlers> appDataHandlersByName;
 
     public EzySimpleHandlerManager(EzyClient client) {
         this.client = client;
         this.pingSchedule = client.getPingSchedule();
         this.eventHandlers = newEventHandlers();
         this.dataHandlers = newDataHandlers();
-        this.appDataHandlerss = new HashMap<>();
+        this.appDataHandlersByName = new HashMap<>();
     }
 
     private EzyEventHandlers newEventHandlers() {
@@ -79,10 +79,10 @@ public class EzySimpleHandlerManager implements EzyHandlerManager {
 
     @Override
     public EzyAppDataHandlers getAppDataHandlers(String appName) {
-        EzyAppDataHandlers answer = appDataHandlerss.get(appName);
+        EzyAppDataHandlers answer = appDataHandlersByName.get(appName);
         if(answer == null) {
             answer = new EzyAppDataHandlers();
-            appDataHandlerss.put(appName, answer);
+            appDataHandlersByName.put(appName, answer);
         }
         return answer;
     }
