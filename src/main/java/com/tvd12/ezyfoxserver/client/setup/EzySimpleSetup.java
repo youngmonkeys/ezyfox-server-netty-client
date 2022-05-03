@@ -9,10 +9,6 @@ import com.tvd12.ezyfoxserver.client.manager.EzyHandlerManager;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by tavandung12 on 9/30/18.
- */
-
 @SuppressWarnings("rawtypes")
 public class EzySimpleSetup implements EzySetup {
 
@@ -30,7 +26,7 @@ public class EzySimpleSetup implements EzySetup {
         return this;
     }
 
-	@Override
+    @Override
     public EzySetup addEventHandler(EzyEventType eventType, EzyEventHandler eventHandler) {
         handlerManager.addEventHandler(eventType, eventHandler);
         return this;
@@ -39,7 +35,7 @@ public class EzySimpleSetup implements EzySetup {
     @Override
     public EzyAppSetup setupApp(String appName) {
         EzyAppSetup appSetup = appSetups.get(appName);
-        if(appSetup == null) {
+        if (appSetup == null) {
             EzyAppDataHandlers dataHandlers = handlerManager.getAppDataHandlers(appName);
             appSetup = new EzySimpleAppSetup(dataHandlers, this);
             appSetups.put(appName, appSetup);

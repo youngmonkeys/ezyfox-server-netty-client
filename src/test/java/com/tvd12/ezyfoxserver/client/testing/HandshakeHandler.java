@@ -6,9 +6,8 @@ import com.tvd12.ezyfoxserver.client.request.EzyRequest;
 
 public class HandshakeHandler extends EzyHandshakeHandler {
 
-	@Override
-	protected EzyRequest getLoginRequest() {
-		return new EzyLoginRequest("example", "DungTV", "123456");
-	}
-
+    @Override
+    protected EzyRequest getLoginRequest() {
+        return new EzyLoginRequest("example", "DungTV", "123456");
+    }
 }

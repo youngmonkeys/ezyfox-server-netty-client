@@ -1,32 +1,13 @@
 package com.tvd12.ezyfoxserver.client;
 
-import static com.tvd12.ezyfoxserver.client.constant.EzyConnectionStatuses.isClientConnectable;
-import static com.tvd12.ezyfoxserver.client.constant.EzyConnectionStatuses.isClientReconnectable;
-
-import java.net.URI;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.tvd12.ezyfox.entity.EzyArray;
 import com.tvd12.ezyfox.entity.EzyData;
 import com.tvd12.ezyfox.entity.EzyEntity;
 import com.tvd12.ezyfoxserver.client.config.EzyClientConfig;
 import com.tvd12.ezyfoxserver.client.constant.EzyCommand;
 import com.tvd12.ezyfoxserver.client.constant.EzyConnectionStatus;
-import com.tvd12.ezyfoxserver.client.entity.EzyApp;
-import com.tvd12.ezyfoxserver.client.entity.EzyMeAware;
-import com.tvd12.ezyfoxserver.client.entity.EzyUser;
-import com.tvd12.ezyfoxserver.client.entity.EzyZone;
-import com.tvd12.ezyfoxserver.client.entity.EzyZoneAware;
-import com.tvd12.ezyfoxserver.client.manager.EzyAppManager;
-import com.tvd12.ezyfoxserver.client.manager.EzyHandlerManager;
-import com.tvd12.ezyfoxserver.client.manager.EzyPingManager;
-import com.tvd12.ezyfoxserver.client.manager.EzySimpleHandlerManager;
-import com.tvd12.ezyfoxserver.client.manager.EzySimplePingManager;
+import com.tvd12.ezyfoxserver.client.entity.*;
+import com.tvd12.ezyfoxserver.client.manager.*;
 import com.tvd12.ezyfoxserver.client.request.EzyRequest;
 import com.tvd12.ezyfoxserver.client.request.EzyRequestSerializer;
 import com.tvd12.ezyfoxserver.client.request.EzySimpleRequestSerializer;
@@ -36,36 +17,40 @@ import com.tvd12.ezyfoxserver.client.socket.EzyISocketClient;
 import com.tvd12.ezyfoxserver.client.socket.EzyNettySocketClient;
 import com.tvd12.ezyfoxserver.client.socket.EzyPingSchedule;
 import com.tvd12.ezyfoxserver.client.socket.EzySocketClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * Created by tavandung12 on 9/20/18.
- */
+import java.net.URI;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
+import static com.tvd12.ezyfoxserver.client.constant.EzyConnectionStatuses.isClientConnectable;
+import static com.tvd12.ezyfoxserver.client.constant.EzyConnectionStatuses.isClientReconnectable;
 
 public abstract class EzyNettyClient
-        extends EzyEntity
-        implements EzyClient, EzyMeAware, EzyZoneAware {
+    extends EzyEntity
+    implements EzyClient, EzyMeAware, EzyZoneAware {
 
-	protected EzyUser me;
-    protected EzyZone zone;
-    protected long sessionId;
-    protected String sessionToken;
     protected final String name;
     protected final EzySetup settingUp;
     protected final EzyClientConfig config;
     protected final EzyPingManager pingManager;
     protected final EzyHandlerManager handlerManager;
     protected final EzyRequestSerializer requestSerializer;
-
-    protected EzyConnectionStatus status;
-    protected EzyConnectionStatus udpStatus;
-    protected final Set<Object> unloggableCommands;
-
+    protected final Set<Object> ignoredLogCommands;
     protected final EzySocketClient socketClient;
     protected final EzyPingSchedule pingSchedule;
     protected final Logger logger = LoggerFactory.getLogger(getClass());
+    protected EzyUser me;
+    protected EzyZone zone;
+    protected long sessionId;
+    protected String sessionToken;
+    protected EzyConnectionStatus status;
+    protected EzyConnectionStatus udpStatus;
 
     public EzyNettyClient(EzyClientConfig config) {
-    		this.config = config;
+        this.config = config;
         this.name = config.getClientName();
         this.status = EzyConnectionStatus.NULL;
         this.pingManager = new EzySimplePingManager(config.getPing());
@@ -73,11 +58,11 @@ public abstract class EzyNettyClient
         this.handlerManager = new EzySimpleHandlerManager(this);
         this.requestSerializer = new EzySimpleRequestSerializer();
         this.settingUp = new EzySimpleSetup(handlerManager);
-        this.unloggableCommands = newUnloggableCommands();
+        this.ignoredLogCommands = newIgnoredLogCommands();
         this.socketClient = newSocketClient();
     }
 
-    private Set<Object> newUnloggableCommands() {
+    private Set<Object> newIgnoredLogCommands() {
         Set<Object> set = new HashSet<>();
         set.add(EzyCommand.PING);
         set.add(EzyCommand.PONG);
@@ -85,47 +70,47 @@ public abstract class EzyNettyClient
     }
 
     protected EzySocketClient newSocketClient() {
-    		EzyNettySocketClient client = newNettySocketClient();
+        EzyNettySocketClient client = newNettySocketClient();
         client.setPingSchedule(pingSchedule);
         client.setPingManager(pingManager);
         client.setHandlerManager(handlerManager);
         client.setReconnectConfig(config.getReconnect());
-        client.setUnloggableCommands(unloggableCommands);
+        client.setIgnoredLogCommands(ignoredLogCommands);
         return client;
     }
-    
+
     protected abstract EzyNettySocketClient newNettySocketClient();
-    
+
     @Override
     public EzySetup setup() {
         return settingUp;
     }
-    
+
     @Override
     public void connect(String url) {
-    	URI uri = URI.create(url);
-    	connect(uri.getHost(), uri.getPort());
+        URI uri = URI.create(url);
+        connect(uri.getHost(), uri.getPort());
     }
 
     @Override
     public void connect(String host, int port) {
-    	connectTo(host, port);
+        connectTo(host, port);
     }
-    
+
     protected void connectTo(Object... args) {
-    	try {
+        try {
             if (!isClientConnectable(status)) {
-            	logger.warn("client has already connected to: {}", Arrays.toString(args));
+                logger.warn("client has already connected to: {}", Arrays.toString(args));
                 return;
             }
-            preconnect();
+            preConnect();
             socketClient.connectTo(args);
             setStatus(EzyConnectionStatus.CONNECTING);
         } catch (Exception e) {
             logger.error("connect to server error", e);
         }
     }
-    
+
     @Override
     public boolean reconnect() {
         if (!isClientReconnectable(status)) {
@@ -134,14 +119,15 @@ public abstract class EzyNettyClient
             logger.warn("client has already connected to: " + host + ":" + port);
             return false;
         }
-        preconnect();
+        preConnect();
         boolean success = socketClient.reconnect();
-        if (success)
+        if (success) {
             setStatus(EzyConnectionStatus.RECONNECTING);
+        }
         return success;
     }
-    
-    protected void preconnect() {
+
+    protected void preConnect() {
         this.me = null;
         this.zone = null;
     }
@@ -211,50 +197,48 @@ public abstract class EzyNettyClient
     public void setStatus(EzyConnectionStatus status) {
         this.status = status;
     }
-    
+
+    @Override
+    public EzyConnectionStatus getUdpStatus() {
+        return udpStatus;
+    }
+
     @Override
     public void setUdpStatus(EzyConnectionStatus status) {
         this.udpStatus = status;
     }
-    
+
     @Override
-    public EzyConnectionStatus getUdpStatus() {
-    	return udpStatus;
+    public void setSessionId(long sessionId) {
+        this.sessionId = sessionId;
+        this.socketClient.setSessionId(sessionId);
     }
-    
+
     @Override
-	public void setSessionId(long sessionId) {
-    	this.sessionId = sessionId;
-    	this.socketClient.setSessionId(sessionId);
-	}
-    
-    @Override
-	public void setSessionToken(String token) {
-    	this.sessionToken = token;
-    	this.socketClient.setSessionToken(sessionToken);
-	}
-    
+    public void setSessionToken(String token) {
+        this.sessionToken = token;
+        this.socketClient.setSessionToken(sessionToken);
+    }
+
     @Override
     public EzyISocketClient getSocket() {
-    	return socketClient;
+        return socketClient;
     }
-    
+
     @Override
-	public EzyApp getApp() {
-    	if(zone != null) {
-    		EzyAppManager appManager = zone.getAppManager();
-            EzyApp app = appManager.getApp();
-            return app;
-    	}
-    	return null;
-	}
+    public EzyApp getApp() {
+        if (zone != null) {
+            EzyAppManager appManager = zone.getAppManager();
+            return appManager.getApp();
+        }
+        return null;
+    }
 
     @Override
     public EzyApp getAppById(int appId) {
         if (zone != null) {
             EzyAppManager appManager = zone.getAppManager();
-            EzyApp app = appManager.getAppById(appId);
-            return app;
+            return appManager.getAppById(appId);
         }
         return null;
     }
@@ -263,7 +247,7 @@ public abstract class EzyNettyClient
     public EzyPingManager getPingManager() {
         return pingManager;
     }
-    
+
     @Override
     public EzyPingSchedule getPingSchedule() {
         return pingSchedule;
@@ -275,31 +259,32 @@ public abstract class EzyNettyClient
     }
 
     protected void printSentData(EzyCommand cmd, EzyArray data) {
-        if (!unloggableCommands.contains(cmd))
-        		logger.debug("send command: " + cmd + " and data: " + data);
+        if (!ignoredLogCommands.contains(cmd)) {
+            logger.debug("send command: " + cmd + " and data: " + data);
+        }
     }
-    
+
     @Override
     public void udpConnect(int port) {
-    	throw new UnsupportedOperationException("only support TCP, use EzyUTClient instead");
+        throw new UnsupportedOperationException("only support TCP, use EzyUTClient instead");
     }
-    
+
     @Override
     public void udpConnect(String host, int port) {
-    	throw new UnsupportedOperationException("only support TCP, use EzyUTClient instead");
+        throw new UnsupportedOperationException("only support TCP, use EzyUTClient instead");
     }
-    
+
     @Override
     public void udpSend(EzyRequest request) {
-    	throw new UnsupportedOperationException("only support TCP, use EzyUTClient instead");
+        throw new UnsupportedOperationException("only support TCP, use EzyUTClient instead");
     }
-    
+
     @Override
-	public void udpSend(EzyCommand cmd, EzyArray data) {
-    	throw new UnsupportedOperationException("only support TCP, use EzyUTClient instead");
-	}
-    
+    public void udpSend(EzyCommand cmd, EzyArray data) {
+        throw new UnsupportedOperationException("only support TCP, use EzyUTClient instead");
+    }
+
     public void close() {
-    	socketClient.close();
+        socketClient.close();
     }
 }

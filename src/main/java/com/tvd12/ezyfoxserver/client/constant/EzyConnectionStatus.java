@@ -1,9 +1,5 @@
 package com.tvd12.ezyfoxserver.client.constant;
 
-/**
- * Created by tavandung12 on 10/3/18.
- */
-
 public enum EzyConnectionStatus implements EzyConstant {
 
     NULL(0),
@@ -15,7 +11,7 @@ public enum EzyConnectionStatus implements EzyConstant {
 
     private final int id;
 
-    private EzyConnectionStatus(int id) {
+    EzyConnectionStatus(int id) {
         this.id = id;
     }
 

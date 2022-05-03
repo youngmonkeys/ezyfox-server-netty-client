@@ -2,10 +2,6 @@ package com.tvd12.ezyfoxserver.client.config;
 
 import com.tvd12.ezyfox.builder.EzyBuilder;
 
-/**
- * Created by tavandung12 on 10/11/18.
- */
-
 public class EzyClientConfig {
 
     private final String zoneName;
@@ -20,37 +16,38 @@ public class EzyClientConfig {
         this.reconnect = builder.reconnectConfigBuilder.build();
     }
 
+    public static Builder builder() {
+        return new Builder();
+    }
+
     public String getZoneName() {
         return zoneName;
     }
 
     public String getClientName() {
-        if(clientName == null)
+        if (clientName == null) {
             return zoneName;
+        }
         return clientName;
     }
-    
+
     public EzyPingConfig getPing() {
-		return ping;
-	}
+        return ping;
+    }
 
     public EzyReconnectConfig getReconnect() {
         return reconnect;
     }
 
-    public static Builder builder() {
-        return new Builder();
-    }
-
     public static class Builder implements EzyBuilder<EzyClientConfig> {
 
-        private String zoneName;
-        private String clientName;
         private final EzyPingConfig.Builder pingConfigBuilder;
         private final EzyReconnectConfig.Builder reconnectConfigBuilder;
+        private String zoneName;
+        private String clientName;
 
         public Builder() {
-        	this.pingConfigBuilder = new EzyPingConfig.Builder(this);
+            this.pingConfigBuilder = new EzyPingConfig.Builder(this);
             this.reconnectConfigBuilder = new EzyReconnectConfig.Builder(this);
         }
 
@@ -63,9 +60,9 @@ public class EzyClientConfig {
             this.clientName = clientName;
             return this;
         }
-        
+
         public EzyPingConfig.Builder pingConfigBuilder() {
-        	return pingConfigBuilder;
+            return pingConfigBuilder;
         }
 
         public EzyReconnectConfig.Builder reconnectConfigBuilder() {
@@ -76,6 +73,5 @@ public class EzyClientConfig {
         public EzyClientConfig build() {
             return new EzyClientConfig(this);
         }
-
     }
 }

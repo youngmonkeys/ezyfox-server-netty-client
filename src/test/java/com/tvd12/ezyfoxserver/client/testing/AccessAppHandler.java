@@ -7,11 +7,10 @@ import com.tvd12.ezyfoxserver.client.handler.EzyAppAccessHandler;
 
 public class AccessAppHandler extends EzyAppAccessHandler {
 
-	@Override
-	protected void postHandle(EzyApp app, EzyArray data) {
-		app.send("greet", EzyEntityFactory.newObjectBuilder()
-				.append("who", client.getMe().getName())
-				.build());
-	}
-	
+    @Override
+    protected void postHandle(EzyApp app, EzyArray data) {
+        app.send("greet", EzyEntityFactory.newObjectBuilder()
+            .append("who", client.getMe().getName())
+            .build());
+    }
 }

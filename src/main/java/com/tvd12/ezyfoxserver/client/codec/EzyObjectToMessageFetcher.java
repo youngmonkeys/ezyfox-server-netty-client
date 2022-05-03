@@ -4,6 +4,5 @@ import com.tvd12.ezyfox.codec.EzyObjectToMessage;
 
 public interface EzyObjectToMessageFetcher {
 
-	EzyObjectToMessage getObjectToMessage();
-	
+    EzyObjectToMessage getObjectToMessage();
 }

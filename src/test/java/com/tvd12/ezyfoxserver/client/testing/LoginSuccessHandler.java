@@ -6,9 +6,8 @@ import com.tvd12.ezyfoxserver.client.request.EzyAppAccessRequest;
 
 public class LoginSuccessHandler extends EzyLoginSuccessHandler {
 
-	@Override
-	protected void handleLoginSuccess(EzyData responseData) {
-		client.send(new EzyAppAccessRequest("hello-world"));
-	}
-	
+    @Override
+    protected void handleLoginSuccess(EzyData responseData) {
+        client.send(new EzyAppAccessRequest("hello-world"));
+    }
 }

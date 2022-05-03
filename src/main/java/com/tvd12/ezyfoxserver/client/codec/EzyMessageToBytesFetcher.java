@@ -4,6 +4,5 @@ import com.tvd12.ezyfox.codec.EzyMessageToBytes;
 
 public interface EzyMessageToBytesFetcher {
 
-	EzyMessageToBytes getMessageToBytes();
-	
+    EzyMessageToBytes getMessageToBytes();
 }

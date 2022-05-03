@@ -5,14 +5,13 @@ java client for ezyfox server use netty
 # Installation
 
 ```xml
+
 <dependency>
     <groupId>com.tvd12</groupId>
     <artifactId>ezyfox-server-netty-client</artifactId>
     <version>1.1.3</version>
 </dependency>
 ```
-
-
 
 # Contact us
 

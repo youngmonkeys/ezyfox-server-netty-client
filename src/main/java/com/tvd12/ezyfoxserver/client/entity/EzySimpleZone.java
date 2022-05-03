@@ -4,10 +4,6 @@ import com.tvd12.ezyfoxserver.client.EzyClient;
 import com.tvd12.ezyfoxserver.client.manager.EzyAppManager;
 import com.tvd12.ezyfoxserver.client.manager.EzySimpleAppManager;
 
-/**
- * Created by tavandung12 on 10/2/18.
- */
-
 public class EzySimpleZone implements EzyZone {
 
     protected final int id;
@@ -41,20 +37,17 @@ public class EzySimpleZone implements EzyZone {
     public EzyAppManager getAppManager() {
         return appManager;
     }
-    
+
     @Override
-   	public EzyApp getApp() {
-       	return appManager.getApp();
-   	}
-    
-    @Override
-    public String toString() {
-    	return new StringBuilder()
-    			.append("Zone(")
-    			.append("id: ").append(id).append(", ")
-    			.append("name: ").append(name)
-    			.append(")")
-    			.toString();
+    public EzyApp getApp() {
+        return appManager.getApp();
     }
 
+    @Override
+    public String toString() {
+        return "Zone(" +
+            "id: " + id + ", " +
+            "name: " + name +
+            ")";
+    }
 }

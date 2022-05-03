@@ -4,13 +4,12 @@ import io.netty.channel.ChannelOutboundHandler;
 
 public class JacksonWsCodecCreator extends JacksonCodecCreator {
 
-	public JacksonWsCodecCreator() {
-		super();
-	}
-	
-	@Override
-	public ChannelOutboundHandler newEncoder() {
-		return new JacksonMessageToTextWsFrameEncoder(serializer);
-	}
+    public JacksonWsCodecCreator() {
+        super();
+    }
 
+    @Override
+    public ChannelOutboundHandler newEncoder() {
+        return new JacksonMessageToTextWsFrameEncoder(serializer);
+    }
 }

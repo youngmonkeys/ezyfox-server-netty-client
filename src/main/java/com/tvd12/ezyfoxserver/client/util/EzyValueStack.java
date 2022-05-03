@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Stack;
 
 public class EzyValueStack<V> {
+
     protected V topValue;
     protected V lastValue;
     protected V defaultValue;
@@ -33,8 +34,7 @@ public class EzyValueStack<V> {
             int size = values.size();
             if (size > 0) {
                 topValue = values.pop();
-            }
-            else {
+            } else {
                 topValue = defaultValue;
             }
             return topValue;
@@ -43,8 +43,9 @@ public class EzyValueStack<V> {
 
     public void popAll(List<V> buffer) {
         synchronized (this) {
-            while (values.size() > 0)
+            while (values.size() > 0) {
                 buffer.add(values.pop());
+            }
         }
     }
 
@@ -68,8 +69,7 @@ public class EzyValueStack<V> {
 
     public int size() {
         synchronized (this) {
-            int size = values.size();
-            return size;
+            return values.size();
         }
     }
 }

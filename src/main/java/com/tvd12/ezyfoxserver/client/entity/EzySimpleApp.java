@@ -11,10 +11,6 @@ import com.tvd12.ezyfoxserver.client.handler.EzyAppDataHandler;
 import com.tvd12.ezyfoxserver.client.handler.EzyAppDataHandlers;
 import com.tvd12.ezyfoxserver.client.request.EzyRequest;
 
-/**
- * Created by tavandung12 on 10/2/18.
- */
-
 public class EzySimpleApp extends EzyEntity implements EzyApp {
     protected final int id;
     protected final String name;
@@ -42,15 +38,15 @@ public class EzySimpleApp extends EzyEntity implements EzyApp {
 
     public void send(String cmd, EzyData data) {
         EzyArrayBuilder commandData = EzyEntityFactory.newArrayBuilder()
-                .append(cmd)
-                .append(data);
+            .append(cmd)
+            .append(data);
         EzyArray requestData = EzyEntityFactory.newArrayBuilder()
-                .append(id)
-                .append(commandData.build())
-                .build();
+            .append(id)
+            .append(commandData.build())
+            .build();
         client.send(EzyCommand.APP_REQUEST, requestData);
     }
-    
+
     @Override
     public void udpSend(EzyRequest request) {
         String cmd = (String) request.getCommand();
@@ -65,8 +61,8 @@ public class EzySimpleApp extends EzyEntity implements EzyApp {
 
     @Override
     public void udpSend(String cmd, EzyData data) {
-    	EzyArray commandData = EzyEntityFactory.newArray();
-    	commandData.add(cmd, data);
+        EzyArray commandData = EzyEntityFactory.newArray();
+        commandData.add(cmd, data);
         EzyArray requestData = EzyEntityFactory.newArray();
         requestData.add(id, commandData);
         client.udpSend(EzyCommand.APP_REQUEST, requestData);
@@ -89,17 +85,14 @@ public class EzySimpleApp extends EzyEntity implements EzyApp {
     }
 
     public EzyAppDataHandler<?> getDataHandler(Object cmd) {
-        EzyAppDataHandler<?> handler = dataHandlers.getHandler(cmd);
-        return handler;
+        return (EzyAppDataHandler<?>) dataHandlers.getHandler(cmd);
     }
-    
+
     @Override
     public String toString() {
-    	return new StringBuilder()
-    			.append("App(")
-    			.append("id: ").append(id).append(", ")
-    			.append("name: ").append(name)
-    			.append(")")
-    			.toString();
+        return "App(" +
+            "id: " + id + ", " +
+            "name: " + name +
+            ")";
     }
 }

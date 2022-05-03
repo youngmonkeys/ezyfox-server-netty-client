@@ -7,7 +7,7 @@ public class EzyLoginErrorHandler extends EzyAbstractDataHandler {
 
     @Override
     public void handle(EzyArray data) {
-    	client.disconnect(EzyDisconnectReason.UNAUTHORIZED.getId());
+        client.disconnect(EzyDisconnectReason.UNAUTHORIZED.getId());
         handleLoginError(data);
     }
 

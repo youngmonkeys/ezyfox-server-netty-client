@@ -9,14 +9,10 @@ import com.tvd12.ezyfoxserver.client.socket.EzyPingSchedule;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * Created by tavandung12 on 9/30/18.
- */
-
 @SuppressWarnings("rawtypes")
 public class EzyEventHandlers extends EzyAbstractHandlers {
 
-	private final Map<EzyConstant, EzyEventHandler> handlers;
+    private final Map<EzyConstant, EzyEventHandler> handlers;
 
     public EzyEventHandlers(EzyClient client, EzyPingSchedule pingSchedule) {
         super(client, pingSchedule);
@@ -29,18 +25,17 @@ public class EzyEventHandlers extends EzyAbstractHandlers {
     }
 
     public EzyEventHandler getHandler(EzyConstant eventType) {
-        EzyEventHandler handler = handlers.get(eventType);
-        return handler;
+        return handlers.get(eventType);
     }
 
     @SuppressWarnings("unchecked")
-	public void handle(EzyEvent event) {
+    public void handle(EzyEvent event) {
         EzyEventType eventType = event.getType();
         EzyEventHandler handler = handlers.get(eventType);
-        if(handler != null)
+        if (handler != null) {
             handler.handle(event);
-        else
+        } else {
             logger.warn("has no handler for event type: " + eventType);
+        }
     }
-    
 }
