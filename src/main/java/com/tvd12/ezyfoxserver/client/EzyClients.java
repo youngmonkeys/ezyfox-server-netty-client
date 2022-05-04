@@ -63,11 +63,11 @@ public final class EzyClients {
 
     public EzyClient getClient(String name) {
         synchronized (clients) {
-            return getClient0(name);
+            return doGetClient(name);
         }
     }
 
-    private EzyClient getClient0(String name) {
+    private EzyClient doGetClient(String name) {
         if (name == null) {
             throw new NullPointerException("can not get client with name: null");
         }
@@ -79,7 +79,7 @@ public final class EzyClients {
             if (defaultClientName == null) {
                 return null;
             }
-            return getClient0(defaultClientName);
+            return doGetClient(defaultClientName);
         }
     }
 
