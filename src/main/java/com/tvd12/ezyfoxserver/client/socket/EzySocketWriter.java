@@ -30,6 +30,24 @@ public abstract class EzySocketWriter extends EzySocketAdapter {
         }
     }
 
+    @Override
+    public boolean fire() {
+        try {
+            if (!active) {
+                return false;
+            }
+            EzyArray packet = packetQueue.poll();
+            if (packet == null) {
+                return true;
+            }
+            writePacketToSocket(packet);
+        } catch (Exception e) {
+            logger.warn("problems in socket-writer main loop, thread", e);
+            return false;
+        }
+        return true;
+    }
+
     protected abstract void writePacketToSocket(EzyArray packet);
 
     @Override

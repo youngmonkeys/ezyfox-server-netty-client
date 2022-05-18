@@ -3,6 +3,7 @@ package com.tvd12.ezyfoxserver.client;
 import com.tvd12.ezyfox.entity.EzyArray;
 import com.tvd12.ezyfox.entity.EzyData;
 import com.tvd12.ezyfox.entity.EzyEntity;
+import com.tvd12.ezyfoxserver.client.concurrent.EzyEventLoopGroup;
 import com.tvd12.ezyfoxserver.client.config.EzyClientConfig;
 import com.tvd12.ezyfoxserver.client.constant.EzyCommand;
 import com.tvd12.ezyfoxserver.client.constant.EzyConnectionStatus;
@@ -17,6 +18,7 @@ import com.tvd12.ezyfoxserver.client.socket.EzyISocketClient;
 import com.tvd12.ezyfoxserver.client.socket.EzyNettySocketClient;
 import com.tvd12.ezyfoxserver.client.socket.EzyPingSchedule;
 import com.tvd12.ezyfoxserver.client.socket.EzySocketClient;
+import io.netty.channel.EventLoopGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -32,6 +34,12 @@ public abstract class EzyNettyClient
     extends EzyEntity
     implements EzyClient, EzyMeAware, EzyZoneAware {
 
+    protected EzyUser me;
+    protected EzyZone zone;
+    protected long sessionId;
+    protected String sessionToken;
+    protected EzyConnectionStatus status;
+    protected EzyConnectionStatus udpStatus;
     protected final String name;
     protected final EzySetup settingUp;
     protected final EzyClientConfig config;
@@ -41,20 +49,26 @@ public abstract class EzyNettyClient
     protected final Set<Object> ignoredLogCommands;
     protected final EzySocketClient socketClient;
     protected final EzyPingSchedule pingSchedule;
+    protected final EzyEventLoopGroup eventLoopGroup;
+    protected final EventLoopGroup nettyEventLoopGroup;
     protected final Logger logger = LoggerFactory.getLogger(getClass());
-    protected EzyUser me;
-    protected EzyZone zone;
-    protected long sessionId;
-    protected String sessionToken;
-    protected EzyConnectionStatus status;
-    protected EzyConnectionStatus udpStatus;
 
     public EzyNettyClient(EzyClientConfig config) {
+        this(config, null, null);
+    }
+
+    public EzyNettyClient(
+        EzyClientConfig config,
+        EzyEventLoopGroup eventLoopGroup,
+        EventLoopGroup nettyEventLoopGroup
+    ) {
         this.config = config;
         this.name = config.getClientName();
         this.status = EzyConnectionStatus.NULL;
+        this.eventLoopGroup = eventLoopGroup;
+        this.nettyEventLoopGroup = nettyEventLoopGroup;
         this.pingManager = new EzySimplePingManager(config.getPing());
-        this.pingSchedule = new EzyPingSchedule(this);
+        this.pingSchedule = new EzyPingSchedule(this, eventLoopGroup);
         this.handlerManager = new EzySimpleHandlerManager(this);
         this.requestSerializer = new EzySimpleRequestSerializer();
         this.settingUp = new EzySimpleSetup(handlerManager);
@@ -74,6 +88,8 @@ public abstract class EzyNettyClient
         client.setPingSchedule(pingSchedule);
         client.setPingManager(pingManager);
         client.setHandlerManager(handlerManager);
+        client.setEventLoopGroup(eventLoopGroup);
+        client.setNettyEventLoopGroup(nettyEventLoopGroup);
         client.setReconnectConfig(config.getReconnect());
         client.setIgnoredLogCommands(ignoredLogCommands);
         return client;

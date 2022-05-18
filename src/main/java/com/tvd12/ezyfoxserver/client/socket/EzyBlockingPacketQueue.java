@@ -34,6 +34,13 @@ public class EzyBlockingPacketQueue implements EzyPacketQueue {
     }
 
     @Override
+    public EzyArray poll() {
+        synchronized (this) {
+            return queue.poll();
+        }
+    }
+
+    @Override
     public EzyArray take() throws InterruptedException {
         synchronized (this) {
             while (queue.isEmpty()) {

@@ -8,6 +8,8 @@ public interface EzyPacketQueue {
 
     void clear();
 
+    EzyArray poll();
+
     EzyArray take() throws InterruptedException;
 
     boolean isFull();

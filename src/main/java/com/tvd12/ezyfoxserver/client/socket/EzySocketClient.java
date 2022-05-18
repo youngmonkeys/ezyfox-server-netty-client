@@ -2,6 +2,7 @@ package com.tvd12.ezyfoxserver.client.socket;
 
 import com.tvd12.ezyfox.entity.EzyArray;
 import com.tvd12.ezyfox.util.EzyLoggable;
+import com.tvd12.ezyfoxserver.client.concurrent.EzyEventLoopGroup;
 import com.tvd12.ezyfoxserver.client.config.EzyReconnectConfig;
 import com.tvd12.ezyfoxserver.client.constant.EzyCommand;
 import com.tvd12.ezyfoxserver.client.constant.EzyConnectionFailedReason;
@@ -13,6 +14,8 @@ import com.tvd12.ezyfoxserver.client.handler.EzyEventHandlers;
 import com.tvd12.ezyfoxserver.client.manager.EzyHandlerManager;
 import com.tvd12.ezyfoxserver.client.manager.EzyPingManager;
 import com.tvd12.ezyfoxserver.client.util.EzyValueStack;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +26,32 @@ import static com.tvd12.ezyfoxserver.client.constant.EzySocketStatuses.*;
 public abstract class EzySocketClient
     extends EzyLoggable
     implements EzyISocketClient, EzySocketDelegate {
+
+    @Getter
+    protected String host;
+    @Getter
+    protected int port;
+    protected int reconnectCount;
+    protected long connectTime;
+    protected int disconnectReason;
+    @Setter
+    protected long sessionId;
+    @Setter
+    protected String sessionToken;
+    @Setter
+    protected EzyReconnectConfig reconnectConfig;
+    protected EzyHandlerManager handlerManager;
+    @Setter
+    protected Set<Object> ignoredLogCommands;
+    @Setter
+    protected EzyPingManager pingManager;
+    protected EzyPingSchedule pingSchedule;
+    protected EzyEventHandlers eventHandlers;
+    protected EzyDataHandlers dataHandlers;
+    protected EzySocketWriter socketWriter;
+    @Setter
+    protected EzyEventLoopGroup eventLoopGroup;
+    protected EzyConnectionFailedReason connectionFailedReason;
     protected final EzySocketReader socketReader;
     protected final EzyPacketQueue packetQueue;
     protected final EzySocketEventQueue socketEventQueue;
@@ -30,22 +59,6 @@ public abstract class EzySocketClient
     protected final List<EzyArray> localMessageQueue;
     protected final List<EzySocketStatus> localSocketStatuses;
     protected final EzyValueStack<EzySocketStatus> socketStatuses;
-    protected String host;
-    protected int port;
-    protected int reconnectCount;
-    protected long connectTime;
-    protected int disconnectReason;
-    protected long sessionId;
-    protected String sessionToken;
-    protected EzyReconnectConfig reconnectConfig;
-    protected EzyHandlerManager handlerManager;
-    protected Set<Object> ignoredLogCommands;
-    protected EzyPingManager pingManager;
-    protected EzyPingSchedule pingSchedule;
-    protected EzyEventHandlers eventHandlers;
-    protected EzyDataHandlers dataHandlers;
-    protected EzySocketWriter socketWriter;
-    protected EzyConnectionFailedReason connectionFailedReason;
 
     public EzySocketClient() {
         this.socketReader = new EzySocketReader();
@@ -103,9 +116,7 @@ public abstract class EzySocketClient
         socketStatuses.clear();
         disconnectReason = EzyDisconnectReason.UNKNOWN.getId();
         connectionFailedReason = EzyConnectionFailedReason.UNKNOWN;
-        Thread newThread = new Thread(() -> connect1(sleepTime));
-        newThread.setName("ezyfox-connection");
-        newThread.start();
+        connect1(sleepTime);
     }
 
     protected void connect1(int sleepTime) {
@@ -118,9 +129,22 @@ public abstract class EzySocketClient
                 realSleepTime = 2000 - dt;
             }
         }
-        if (realSleepTime >= 0) {
-            sleepBeforeConnect(realSleepTime);
+        if (eventLoopGroup != null) {
+            eventLoopGroup.addOneTimeEvent(
+                this::connect2,
+                realSleepTime
+            );
+        } else {
+            final long sleepTimeFinal = realSleepTime;
+            Thread newThread = new Thread(() ->
+                sleepAndConnect(sleepTimeFinal)
+            );
+            newThread.setName("ezyfox-connection");
+            newThread.start();
         }
+    }
+
+    private void connect2() {
         socketStatuses.push(EzySocketStatus.CONNECTING);
         boolean success = this.connectNow();
         connectTime = System.currentTimeMillis();
@@ -135,11 +159,14 @@ public abstract class EzySocketClient
         }
     }
 
-    protected void sleepBeforeConnect(long sleepTime) {
+    private void sleepAndConnect(long sleepTime) {
         try {
-            Thread.sleep(sleepTime);
-        } catch (Exception e) {
-            throw new IllegalStateException(e);
+            if (sleepTime > 0) {
+                Thread.sleep(sleepTime);
+            }
+            connect2();
+        } catch (Throwable e) {
+            logger.warn("can not connect to server", e);
         }
     }
 
@@ -150,6 +177,7 @@ public abstract class EzySocketClient
     protected void updateAdapters() {
         socketReader.reset();
         socketWriter.setPacketQueue(packetQueue);
+        socketWriter.setEventLoopGroup(eventLoopGroup);
     }
 
     protected abstract void startAdapters();
@@ -292,26 +320,6 @@ public abstract class EzySocketClient
         }
     }
 
-    public String getHost() {
-        return this.host;
-    }
-
-    public int getPort() {
-        return this.port;
-    }
-
-    public void setSessionId(long sessionId) {
-        this.sessionId = sessionId;
-    }
-
-    public void setSessionToken(String sessionToken) {
-        this.sessionToken = sessionToken;
-    }
-
-    public void setPingManager(EzyPingManager pingManager) {
-        this.pingManager = pingManager;
-    }
-
     public void setPingSchedule(EzyPingSchedule pingSchedule) {
         this.pingSchedule = pingSchedule;
         this.pingSchedule.setSocketEventQueue(socketEventQueue);
@@ -321,13 +329,5 @@ public abstract class EzySocketClient
         this.handlerManager = handlerManager;
         this.dataHandlers = handlerManager.getDataHandlers();
         this.eventHandlers = handlerManager.getEventHandlers();
-    }
-
-    public void setReconnectConfig(EzyReconnectConfig reconnectConfig) {
-        this.reconnectConfig = reconnectConfig;
-    }
-
-    public void setIgnoredLogCommands(Set<Object> ignoredLogCommands) {
-        this.ignoredLogCommands = ignoredLogCommands;
     }
 }
