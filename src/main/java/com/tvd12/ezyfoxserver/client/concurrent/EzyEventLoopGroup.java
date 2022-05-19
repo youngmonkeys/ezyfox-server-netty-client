@@ -1,7 +1,9 @@
 package com.tvd12.ezyfoxserver.client.concurrent;
 
-import static com.tvd12.ezyfox.util.EzyProcessor.processSilently;
-import static com.tvd12.ezyfox.util.EzyProcessor.processWithLogException;
+import com.tvd12.ezyfox.concurrent.EzyFuture;
+import com.tvd12.ezyfox.concurrent.EzyFutureTask;
+import com.tvd12.ezyfox.util.EzyLoggable;
+import com.tvd12.ezyfox.util.EzyRoundRobin;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -9,12 +11,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
-import com.tvd12.ezyfox.concurrent.EzyFuture;
-import com.tvd12.ezyfox.concurrent.EzyFutureTask;
-import com.tvd12.ezyfox.util.EzyLoggable;
-import com.tvd12.ezyfox.util.EzyRoundRobin;
+import static com.tvd12.ezyfox.util.EzyProcessor.processSilently;
+import static com.tvd12.ezyfox.util.EzyProcessor.processWithLogException;
 
 public class EzyEventLoopGroup extends EzyLoggable {
 
@@ -47,8 +48,13 @@ public class EzyEventLoopGroup extends EzyLoggable {
         ThreadFactory threadFactory
     ) {
         eventLoopByEvent = new ConcurrentHashMap<>();
+        final AtomicInteger index = new AtomicInteger();
         eventLoops = new EzyRoundRobin<>(
-            () -> new EventLoop(maxSleepTime, threadFactory),
+            () -> new EventLoop(
+                index.getAndIncrement(),
+                maxSleepTime,
+                threadFactory
+            ),
             numberOfThreads
         );
         for (int i = 0; i < numberOfThreads; ++i) {
@@ -130,8 +136,21 @@ public class EzyEventLoopGroup extends EzyLoggable {
         return unfinishedEvents;
     }
 
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder()
+            .append("EzyEventLoopGroup{\n  numberOfEvents=")
+            .append(eventLoopByEvent.size())
+            .append(",\n  eventLoops=[");
+        eventLoops.forEach(it ->
+            builder.append("\n    ").append(it)
+        );
+        return builder.append("\n]}").toString();
+    }
+
     private static final class EventLoop extends EzyLoggable {
 
+        private final int index;
         private final int maxSleepTime;
         private final AtomicBoolean active;
         private final AtomicBoolean stopped;
@@ -141,9 +160,11 @@ public class EzyEventLoopGroup extends EzyLoggable {
         private final Map<EzyEventLoopEvent, EzyEventLoopEvent> events;
 
         private EventLoop(
+            int index,
             int maxSleepTime,
             ThreadFactory threadFactory
         ) {
+            this.index = index;
             this.maxSleepTime = maxSleepTime;
             this.threadFactory = threadFactory;
             this.active = new AtomicBoolean();
@@ -242,6 +263,14 @@ public class EzyEventLoopGroup extends EzyLoggable {
             }
             processSilently(shutdownFuture::get);
             return new ArrayList<>(events.values());
+        }
+
+        @Override
+        public String toString() {
+            return "EventLoop-" + index + "{" +
+                "numberOfEvents=" + events.size() + ", " +
+                "numberOfRemoveEvents=" + removeEvents.size() +
+                '}';
         }
     }
 
