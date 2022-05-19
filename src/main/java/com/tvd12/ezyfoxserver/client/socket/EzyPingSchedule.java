@@ -46,7 +46,7 @@ public class EzyPingSchedule
     }
 
     @Override
-    public boolean fire() {
+    public boolean call() {
         sendPingRequest();
         return true;
     }

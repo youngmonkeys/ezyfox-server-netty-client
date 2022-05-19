@@ -31,7 +31,7 @@ public abstract class EzySocketWriter extends EzySocketAdapter {
     }
 
     @Override
-    public boolean fire() {
+    public boolean call() {
         try {
             if (!active) {
                 return false;

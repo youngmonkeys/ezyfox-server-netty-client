@@ -19,6 +19,8 @@ import com.tvd12.ezyfoxserver.client.socket.EzyNettySocketClient;
 import com.tvd12.ezyfoxserver.client.socket.EzyPingSchedule;
 import com.tvd12.ezyfoxserver.client.socket.EzySocketClient;
 import io.netty.channel.EventLoopGroup;
+import lombok.Getter;
+import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,20 +36,33 @@ public abstract class EzyNettyClient
     extends EzyEntity
     implements EzyClient, EzyMeAware, EzyZoneAware {
 
+    @Getter
+    @Setter
     protected EzyUser me;
+    @Getter
+    @Setter
     protected EzyZone zone;
     protected long sessionId;
     protected String sessionToken;
+    @Getter
+    @Setter
     protected EzyConnectionStatus status;
+    @Getter
+    @Setter
     protected EzyConnectionStatus udpStatus;
+    @Getter
     protected final String name;
     protected final EzySetup settingUp;
+    @Getter
     protected final EzyClientConfig config;
+    @Getter
     protected final EzyPingManager pingManager;
+    @Getter
     protected final EzyHandlerManager handlerManager;
     protected final EzyRequestSerializer requestSerializer;
     protected final Set<Object> ignoredLogCommands;
     protected final EzySocketClient socketClient;
+    @Getter
     protected final EzyPingSchedule pingSchedule;
     protected final EzyEventLoopGroup eventLoopGroup;
     protected final EventLoopGroup nettyEventLoopGroup;
@@ -175,56 +190,6 @@ public abstract class EzyNettyClient
     }
 
     @Override
-    public String getName() {
-        return name;
-    }
-
-    @Override
-    public EzyClientConfig getConfig() {
-        return config;
-    }
-
-    @Override
-    public EzyZone getZone() {
-        return zone;
-    }
-
-    @Override
-    public void setZone(EzyZone zone) {
-        this.zone = zone;
-    }
-
-    @Override
-    public EzyUser getMe() {
-        return me;
-    }
-
-    @Override
-    public void setMe(EzyUser me) {
-        this.me = me;
-    }
-
-    @Override
-    public EzyConnectionStatus getStatus() {
-        return status;
-    }
-
-    @Override
-    public void setStatus(EzyConnectionStatus status) {
-        this.status = status;
-    }
-
-    @Override
-    public EzyConnectionStatus getUdpStatus() {
-        return udpStatus;
-    }
-
-    @Override
-    public void setUdpStatus(EzyConnectionStatus status) {
-        this.udpStatus = status;
-    }
-
-    @Override
     public void setSessionId(long sessionId) {
         this.sessionId = sessionId;
         this.socketClient.setSessionId(sessionId);
@@ -257,21 +222,6 @@ public abstract class EzyNettyClient
             return appManager.getAppById(appId);
         }
         return null;
-    }
-
-    @Override
-    public EzyPingManager getPingManager() {
-        return pingManager;
-    }
-
-    @Override
-    public EzyPingSchedule getPingSchedule() {
-        return pingSchedule;
-    }
-
-    @Override
-    public EzyHandlerManager getHandlerManager() {
-        return handlerManager;
     }
 
     protected void printSentData(EzyCommand cmd, EzyArray data) {

@@ -1,20 +1,23 @@
 package com.tvd12.ezyfoxserver.client.concurrent;
 
-import com.tvd12.ezyfox.util.EzyLoggable;
-import com.tvd12.ezyfox.util.EzyRoundRobin;
+import static com.tvd12.ezyfox.util.EzyProcessor.processSilently;
+import static com.tvd12.ezyfox.util.EzyProcessor.processWithLogException;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+
+import com.tvd12.ezyfox.concurrent.EzyFuture;
+import com.tvd12.ezyfox.concurrent.EzyFutureTask;
+import com.tvd12.ezyfox.util.EzyLoggable;
+import com.tvd12.ezyfox.util.EzyRoundRobin;
 
 public class EzyEventLoopGroup {
 
-    private final ExecutorService executorService;
     private final EzyRoundRobin<EventLoop> eventLoops;
     private final Map<EzyEventLoopEvent, EventLoop> eventLoopByEvent;
 
@@ -45,17 +48,11 @@ public class EzyEventLoopGroup {
     ) {
         eventLoopByEvent = new ConcurrentHashMap<>();
         eventLoops = new EzyRoundRobin<>(
-            () -> new EventLoop(maxSleepTime),
+            () -> new EventLoop(maxSleepTime, threadFactory),
             numberOfThreads
         );
-        executorService = Executors.newFixedThreadPool(
-            numberOfThreads,
-            threadFactory
-        );
         for (int i = 0; i < numberOfThreads; ++i) {
-            executorService.execute(
-                () -> eventLoops.get().start()
-            );
+            eventLoops.get().start();
         }
     }
 
@@ -89,12 +86,21 @@ public class EzyEventLoopGroup {
         Runnable event,
         long delayTime
     ) {
+        final EzyEventLoopEvent wrapper = new EzyEventLoopEvent() {
+            @Override
+            public boolean call() {
+                event.run();
+                return false;
+            }
+
+            @Override
+            public void onFinished() {
+                eventLoopByEvent.remove(this);
+            }
+        };
         addEvent(
             new ScheduledEvent(
-                () -> {
-                    event.run();
-                    return false;
-                },
+                wrapper,
                 delayTime,
                 delayTime
             )
@@ -108,23 +114,45 @@ public class EzyEventLoopGroup {
         }
     }
 
-    public void stop() {
-        eventLoops.forEach(EventLoop::stop);
-        executorService.shutdown();
+    public void shutdown() {
+        eventLoops.forEach(EventLoop::shutdownAndGet);
+    }
+
+    public List<EzyEventLoopEvent> shutdownAndGet() {
+        final List<EzyEventLoopEvent> unfinishedEvents = new ArrayList<>();
+        eventLoops.forEach(it ->
+            unfinishedEvents.addAll(it.shutdownAndGet())
+        );
+        return unfinishedEvents;
     }
 
     private static final class EventLoop extends EzyLoggable {
 
-        private volatile boolean active;
         private final int maxSleepTime;
+        private final AtomicBoolean active;
+        private final AtomicBoolean stopped;
+        private final EzyFuture shutdownFuture;
+        private final ThreadFactory threadFactory;
+        private final List<EzyEventLoopEvent> removeEvents;
         private final Map<EzyEventLoopEvent, EzyEventLoopEvent> events;
 
-        private EventLoop(int maxSleepTime) {
+        private EventLoop(
+            int maxSleepTime,
+            ThreadFactory threadFactory
+        ) {
             this.maxSleepTime = maxSleepTime;
+            this.threadFactory = threadFactory;
+            this.active = new AtomicBoolean();
+            this.stopped = new AtomicBoolean();
             this.events = new ConcurrentHashMap<>();
+            this.removeEvents = new ArrayList<>();
+            this.shutdownFuture = new EzyFutureTask();
         }
 
         public void addEvent(EzyEventLoopEvent event) {
+            if (!active.get()) {
+                throw new IllegalStateException("event loop has stopped");
+            }
             events.put(
                 event instanceof ScheduledEvent
                     ? ((ScheduledEvent) event).event
@@ -134,17 +162,29 @@ public class EzyEventLoopGroup {
         }
 
         public void removeEvent(EzyEventLoopEvent event) {
+            synchronized (removeEvents) {
+                removeEvents.add(event);
+            }
+        }
+
+        private void doRemoveEvent(EzyEventLoopEvent event) {
             events.remove(
                 event instanceof ScheduledEvent
                     ? ((ScheduledEvent) event).event
                     : event
             );
+            processWithLogException(event::onRemoved, true);
         }
 
         public void start() {
-            active = true;
+            threadFactory.newThread(this::doStart)
+                .start();
+        }
+
+        private void doStart() {
+            active.set(true);
             final List<EzyEventLoopEvent> eventBuffers = new ArrayList<>();
-            while (active) {
+            while (active.get()) {
                 final long startTime = System.currentTimeMillis();
                 eventBuffers.addAll(events.values());
                 for (EzyEventLoopEvent event : eventBuffers) {
@@ -155,8 +195,10 @@ public class EzyEventLoopGroup {
                                 continue;
                             }
                         }
-                        if (!event.fire()) {
-                            removeEvent(event);
+                        if (!event.call()) {
+                            synchronized (removeEvents) {
+                                removeEvents.add(event);
+                            }
                             event.onFinished();
                         }
                     } catch (Throwable e) {
@@ -164,6 +206,12 @@ public class EzyEventLoopGroup {
                     }
                 }
                 eventBuffers.clear();
+                synchronized (removeEvents) {
+                    for (EzyEventLoopEvent event : removeEvents) {
+                        doRemoveEvent(event);
+                    }
+                    removeEvents.clear();
+                }
                 final long elapsedTime = System.currentTimeMillis() - startTime;
                 final long sleepTime = maxSleepTime - elapsedTime;
                 if (sleepTime > 0) {
@@ -175,10 +223,21 @@ public class EzyEventLoopGroup {
                     }
                 }
             }
+            synchronized (this) {
+                stopped.set(true);
+                shutdownFuture.setResult(true);
+            }
         }
 
-        public void stop() {
-            active = false;
+        public List<EzyEventLoopEvent> shutdownAndGet() {
+            active.set(false);
+            synchronized (this) {
+                if (stopped.get()) {
+                    shutdownFuture.setResult(true);
+                }
+            }
+            processSilently(shutdownFuture::get);
+            return new ArrayList<>(events.values());
         }
     }
 
@@ -204,9 +263,19 @@ public class EzyEventLoopGroup {
         }
 
         @Override
-        public boolean fire() {
+        public boolean call() {
             this.nextFireTime.addAndGet(period);
-            return event.fire();
+            return event.call();
+        }
+
+        @Override
+        public void onFinished() {
+            event.onFinished();
+        }
+
+        @Override
+        public void onRemoved() {
+            event.onRemoved();
         }
     }
 }

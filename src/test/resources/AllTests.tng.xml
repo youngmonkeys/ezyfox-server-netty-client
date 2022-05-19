@@ -3,7 +3,7 @@
 <suite name="AllTests">
     <test name="All">
         <packages>
-            <package name="com.tvd12.ezyfoxserver.testing" />
+            <package name="com.tvd12.ezyfoxserver.client.testing.concurrent" />
         </packages>
     </test>
 </suite>

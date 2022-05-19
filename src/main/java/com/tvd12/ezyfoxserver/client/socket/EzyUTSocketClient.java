@@ -19,6 +19,7 @@ public class EzyUTSocketClient extends EzyTcpSocketClient {
     public void udpConnect(String host, int port) {
         this.udpClient.setSessionId(sessionId);
         this.udpClient.setSessionToken(sessionToken);
+        this.udpClient.setEventLoopGroup(eventLoopGroup);
         this.udpClient.connectTo(host, port);
     }
 
@@ -38,6 +39,6 @@ public class EzyUTSocketClient extends EzyTcpSocketClient {
 
     @Override
     protected void clearComponents(int disconnectReason) {
-        this.udpClient.disconnect(disconnectReason);
+        this.udpClient.disconnect();
     }
 }

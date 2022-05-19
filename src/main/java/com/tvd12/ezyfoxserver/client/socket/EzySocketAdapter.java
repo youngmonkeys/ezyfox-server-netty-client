@@ -39,20 +39,20 @@ public abstract class EzySocketAdapter
     }
 
     @Override
-    public boolean fire() {
+    public boolean call() {
         return false;
     }
 
     @Override
     public void onFinished() {
-        setStopped(true);
+        setStopped();
     }
 
     protected abstract String getThreadName();
 
     protected void loop() {
         update();
-        setStopped(true);
+        setStopped();
     }
 
     protected abstract void update();
@@ -72,21 +72,15 @@ public abstract class EzySocketAdapter
         }
     }
 
-    protected void setActive(boolean active) {
-        synchronized (adapterLock) {
-            this.active = active;
-        }
-    }
-
     public boolean isStopped() {
         synchronized (adapterLock) {
             return stopped;
         }
     }
 
-    protected void setStopped(boolean stopped) {
+    protected void setStopped() {
         synchronized (adapterLock) {
-            this.stopped = stopped;
+            this.stopped = true;
         }
     }
 }
