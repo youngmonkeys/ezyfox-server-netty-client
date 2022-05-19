@@ -1,12 +1,12 @@
 package com.tvd12.ezyfoxserver.client.socket;
 
 import com.tvd12.ezyfox.codec.EzyCodecCreator;
-import com.tvd12.ezyfox.concurrent.EzyExecutors;
+import com.tvd12.ezyfoxserver.client.concurrent.EzyNettyEventLoopGroup;
 import com.tvd12.ezyfoxserver.client.constant.EzyConnectionFailedReason;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
-import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioSocketChannel;
+import lombok.Setter;
 
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
@@ -14,6 +14,9 @@ import java.net.UnknownHostException;
 
 public abstract class EzyNettySocketClient extends EzySocketClient {
 
+    @Setter
+    protected EventLoopGroup nettyEventLoopGroup;
+    protected EventLoopGroup internalEventLoopGroup;
     protected Channel socket;
     protected EzyConnectionFuture connectionFuture;
     protected final EzyCodecCreator codecCreator = newCodecCreator();
@@ -22,9 +25,12 @@ public abstract class EzyNettySocketClient extends EzySocketClient {
     protected boolean connectNow() {
         boolean success = false;
         try {
+            if (nettyEventLoopGroup == null) {
+                internalEventLoopGroup = new EzyNettyEventLoopGroup();
+                nettyEventLoopGroup = internalEventLoopGroup;
+            }
             connectionFuture = new EzyConnectionFuture();
-            EventLoopGroup eventLoopGroup = newLoopGroup();
-            Bootstrap b = newBootstrap(eventLoopGroup);
+            Bootstrap b = newBootstrap(nettyEventLoopGroup);
             ChannelFuture channelFuture = b.connect();
             channelFuture.syncUninterruptibly();
             if (connectionFuture.isSuccess()) {
@@ -57,10 +63,6 @@ public abstract class EzyNettySocketClient extends EzySocketClient {
             .handler(newChannelInitializer())
             .option(ChannelOption.TCP_NODELAY, false)
             .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 5 * 1000);
-    }
-
-    protected EventLoopGroup newLoopGroup() {
-        return new NioEventLoopGroup(2, EzyExecutors.newThreadFactory("client-event-loop"));
     }
 
     protected ChannelInitializer<Channel> newChannelInitializer() {
@@ -97,7 +99,9 @@ public abstract class EzyNettySocketClient extends EzySocketClient {
             if (socket != null) {
                 this.socket.disconnect();
                 this.socket.close();
-                this.socket.eventLoop().shutdownGracefully();
+                if (internalEventLoopGroup != null) {
+                    internalEventLoopGroup.shutdownGracefully();
+                }
             }
         } catch (Exception e) {
             logger.warn("close socket error");

@@ -8,6 +8,7 @@ import com.tvd12.ezyfoxserver.client.concurrent.EzySynchronizedQueue;
 import com.tvd12.ezyfoxserver.client.constant.EzySocketConstants;
 import com.tvd12.ezyfoxserver.client.util.EzyQueue;
 
+import java.net.SocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.AsynchronousCloseException;
 import java.nio.channels.DatagramChannel;
@@ -56,9 +57,46 @@ public class EzyUdpSocketReader extends EzySocketAdapter {
         }
     }
 
+    @Override
+    public boolean call() {
+        try {
+            if (!active) {
+                return false;
+            }
+            this.buffer.clear();
+            Integer bytesToRead = nonBlockingReadSocketData();
+            if (bytesToRead == null) {
+                return true;
+            } else if (bytesToRead <= 0) {
+                return false;
+            }
+            buffer.flip();
+            byte[] binary = new byte[buffer.limit()];
+            buffer.get(binary);
+            handleReceivedBytes(binary);
+        } catch (Exception e) {
+            logger.warn("I/O error at socket-reader", e);
+            return false;
+        }
+        return true;
+    }
+
     protected int readSocketData() {
         try {
             datagramChannel.receive(buffer);
+            return buffer.position();
+        } catch (Exception e) {
+            handleSocketReaderException(e);
+            return -1;
+        }
+    }
+
+    protected Integer nonBlockingReadSocketData() {
+        try {
+            SocketAddress serverAddress = datagramChannel.receive(buffer);
+            if (serverAddress == null) {
+                return null;
+            }
             return buffer.position();
         } catch (Exception e) {
             handleSocketReaderException(e);

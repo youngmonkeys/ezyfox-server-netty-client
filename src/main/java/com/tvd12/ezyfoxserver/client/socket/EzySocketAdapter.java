@@ -1,11 +1,19 @@
 package com.tvd12.ezyfoxserver.client.socket;
 
 import com.tvd12.ezyfox.util.EzyLoggable;
+import com.tvd12.ezyfoxserver.client.concurrent.EzyEventLoopEvent;
+import com.tvd12.ezyfoxserver.client.concurrent.EzyEventLoopGroup;
+import lombok.Setter;
 
-public abstract class EzySocketAdapter extends EzyLoggable {
-    protected final Object adapterLock;
+public abstract class EzySocketAdapter
+    extends EzyLoggable
+    implements EzyEventLoopEvent {
+
     protected volatile boolean active;
     protected volatile boolean stopped;
+    protected final Object adapterLock;
+    @Setter
+    protected EzyEventLoopGroup eventLoopGroup;
 
     public EzySocketAdapter() {
         this.active = false;
@@ -20,22 +28,31 @@ public abstract class EzySocketAdapter extends EzyLoggable {
             }
             active = true;
             stopped = false;
-            Thread newThread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    loop();
-                }
-            });
-            newThread.setName(getThreadName());
-            newThread.start();
+            if (eventLoopGroup != null) {
+                eventLoopGroup.addEvent(this);
+            } else {
+                Thread newThread = new Thread(this::loop);
+                newThread.setName(getThreadName());
+                newThread.start();
+            }
         }
+    }
+
+    @Override
+    public boolean call() {
+        return false;
+    }
+
+    @Override
+    public void onFinished() {
+        setStopped();
     }
 
     protected abstract String getThreadName();
 
     protected void loop() {
         update();
-        setStopped(true);
+        setStopped();
     }
 
     protected abstract void update();
@@ -43,6 +60,9 @@ public abstract class EzySocketAdapter extends EzyLoggable {
     public void stop() {
         synchronized (adapterLock) {
             active = false;
+            if (eventLoopGroup != null) {
+                eventLoopGroup.removeEvent(this);
+            }
         }
     }
 
@@ -52,21 +72,15 @@ public abstract class EzySocketAdapter extends EzyLoggable {
         }
     }
 
-    protected void setActive(boolean active) {
-        synchronized (adapterLock) {
-            this.active = active;
-        }
-    }
-
     public boolean isStopped() {
         synchronized (adapterLock) {
             return stopped;
         }
     }
 
-    protected void setStopped(boolean stopped) {
+    protected void setStopped() {
         synchronized (adapterLock) {
-            this.stopped = stopped;
+            this.stopped = true;
         }
     }
 }
