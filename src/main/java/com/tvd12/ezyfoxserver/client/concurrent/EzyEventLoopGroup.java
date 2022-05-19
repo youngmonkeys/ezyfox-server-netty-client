@@ -16,7 +16,7 @@ import com.tvd12.ezyfox.concurrent.EzyFutureTask;
 import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.ezyfox.util.EzyRoundRobin;
 
-public class EzyEventLoopGroup {
+public class EzyEventLoopGroup extends EzyLoggable {
 
     private final EzyRoundRobin<EventLoop> eventLoops;
     private final Map<EzyEventLoopEvent, EventLoop> eventLoopByEvent;
@@ -89,7 +89,11 @@ public class EzyEventLoopGroup {
         final EzyEventLoopEvent wrapper = new EzyEventLoopEvent() {
             @Override
             public boolean call() {
-                event.run();
+                try {
+                    event.run();
+                } catch (Throwable e) {
+                    logger.warn("call one time event error", e);
+                }
                 return false;
             }
 
