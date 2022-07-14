@@ -1,6 +1,6 @@
 package com.tvd12.ezyfoxserver.client;
 
-import com.tvd12.ezyfoxserver.client.concurrent.EzyEventLoopGroup;
+import com.tvd12.ezyfox.concurrent.EzyEventLoopGroup;
 import com.tvd12.ezyfoxserver.client.config.EzyClientConfig;
 import com.tvd12.ezyfoxserver.client.constant.EzyConnectionType;
 import com.tvd12.ezyfoxserver.client.socket.EzyNettySocketClient;

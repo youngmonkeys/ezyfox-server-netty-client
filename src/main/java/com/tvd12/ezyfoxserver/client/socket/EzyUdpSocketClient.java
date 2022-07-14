@@ -2,11 +2,11 @@ package com.tvd12.ezyfoxserver.client.socket;
 
 import com.tvd12.ezyfox.codec.EzyByteToObjectDecoder;
 import com.tvd12.ezyfox.codec.EzyCodecCreator;
+import com.tvd12.ezyfox.concurrent.EzyEventLoopGroup;
 import com.tvd12.ezyfox.entity.EzyArray;
 import com.tvd12.ezyfox.util.EzyLoggable;
 import com.tvd12.ezyfoxserver.client.codec.EzyMessageToBytesFetcher;
 import com.tvd12.ezyfoxserver.client.codec.EzyObjectToMessageFetcher;
-import com.tvd12.ezyfoxserver.client.concurrent.EzyEventLoopGroup;
 import com.tvd12.ezyfoxserver.client.constant.EzySocketConstants;
 import com.tvd12.ezyfoxserver.client.constant.EzySocketStatus;
 import com.tvd12.ezyfoxserver.client.util.EzyValueStack;

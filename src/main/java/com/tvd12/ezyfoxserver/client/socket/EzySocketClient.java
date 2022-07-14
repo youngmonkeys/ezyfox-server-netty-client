@@ -1,8 +1,8 @@
 package com.tvd12.ezyfoxserver.client.socket;
 
+import com.tvd12.ezyfox.concurrent.EzyEventLoopGroup;
 import com.tvd12.ezyfox.entity.EzyArray;
 import com.tvd12.ezyfox.util.EzyLoggable;
-import com.tvd12.ezyfoxserver.client.concurrent.EzyEventLoopGroup;
 import com.tvd12.ezyfoxserver.client.config.EzyReconnectConfig;
 import com.tvd12.ezyfoxserver.client.constant.EzyCommand;
 import com.tvd12.ezyfoxserver.client.constant.EzyConnectionFailedReason;

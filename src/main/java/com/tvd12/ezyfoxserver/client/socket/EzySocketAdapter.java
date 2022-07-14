@@ -1,8 +1,8 @@
 package com.tvd12.ezyfoxserver.client.socket;
 
+import com.tvd12.ezyfox.concurrent.EzyEventLoopEvent;
+import com.tvd12.ezyfox.concurrent.EzyEventLoopGroup;
 import com.tvd12.ezyfox.util.EzyLoggable;
-import com.tvd12.ezyfoxserver.client.concurrent.EzyEventLoopEvent;
-import com.tvd12.ezyfoxserver.client.concurrent.EzyEventLoopGroup;
 import lombok.Setter;
 
 public abstract class EzySocketAdapter

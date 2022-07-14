@@ -1,8 +1,8 @@
 package com.tvd12.ezyfoxserver.client;
 
+import com.tvd12.ezyfox.concurrent.EzyEventLoopGroup;
 import com.tvd12.ezyfox.entity.EzyArray;
 import com.tvd12.ezyfox.entity.EzyData;
-import com.tvd12.ezyfoxserver.client.concurrent.EzyEventLoopGroup;
 import com.tvd12.ezyfoxserver.client.config.EzyClientConfig;
 import com.tvd12.ezyfoxserver.client.constant.EzyCommand;
 import com.tvd12.ezyfoxserver.client.request.EzyRequest;
