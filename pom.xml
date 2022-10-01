@@ -11,12 +11,12 @@
 
     <artifactId>ezyfox-server-netty-client</artifactId>
 
-    <version>1.1.6</version>
+    <version>1.1.7</version>
     <name>ezyfox-server-netty-client</name>
     <url>https://youngmonkeys.org/</url>
 
     <properties>
-        <ezy.version>1.2.4</ezy.version>
+        <ezy.version>1.2.5</ezy.version>
         <netty.all.version>4.1.76.Final</netty.all.version>
     </properties>
 
