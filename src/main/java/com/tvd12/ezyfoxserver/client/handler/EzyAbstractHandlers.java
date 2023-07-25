@@ -8,8 +8,8 @@ import com.tvd12.ezyfoxserver.client.socket.EzyPingScheduleAware;
 
 public class EzyAbstractHandlers extends EzyLoggable {
 
-    private final EzyClient client;
-    private final EzyPingSchedule pingSchedule;
+    protected final EzyClient client;
+    protected final EzyPingSchedule pingSchedule;
 
     public EzyAbstractHandlers(EzyClient client, EzyPingSchedule pingSchedule) {
         this.client = client;

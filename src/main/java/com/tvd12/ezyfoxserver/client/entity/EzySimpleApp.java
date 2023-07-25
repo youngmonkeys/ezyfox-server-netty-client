@@ -9,7 +9,10 @@ import com.tvd12.ezyfoxserver.client.EzyClient;
 import com.tvd12.ezyfoxserver.client.constant.EzyCommand;
 import com.tvd12.ezyfoxserver.client.handler.EzyAppDataHandler;
 import com.tvd12.ezyfoxserver.client.handler.EzyAppDataHandlers;
+import com.tvd12.ezyfoxserver.client.metrics.EzyMetricsRecorder;
 import com.tvd12.ezyfoxserver.client.request.EzyRequest;
+import lombok.Getter;
+import lombok.Setter;
 
 public class EzySimpleApp extends EzyEntity implements EzyApp {
     protected final int id;
@@ -17,6 +20,9 @@ public class EzySimpleApp extends EzyEntity implements EzyApp {
     protected final EzyZone zone;
     protected final EzyClient client;
     protected final EzyAppDataHandlers dataHandlers;
+    @Setter
+    @Getter
+    protected EzyMetricsRecorder metricsRecorder;
 
     public EzySimpleApp(EzyZone zone, int id, String name) {
         this.client = zone.getClient();
@@ -24,6 +30,7 @@ public class EzySimpleApp extends EzyEntity implements EzyApp {
         this.id = id;
         this.name = name;
         this.dataHandlers = client.getHandlerManager().getAppDataHandlers(name);
+        this.metricsRecorder = EzyMetricsRecorder.getDefault();
     }
 
     public void send(EzyRequest request) {
@@ -45,6 +52,7 @@ public class EzySimpleApp extends EzyEntity implements EzyApp {
             .append(commandData.build())
             .build();
         client.send(EzyCommand.APP_REQUEST, requestData);
+        metricsRecorder.increaseAppRequestCount(cmd);
     }
 
     @Override
@@ -66,6 +74,7 @@ public class EzySimpleApp extends EzyEntity implements EzyApp {
         EzyArray requestData = EzyEntityFactory.newArray();
         requestData.add(id, commandData);
         client.udpSend(EzyCommand.APP_REQUEST, requestData);
+        metricsRecorder.increaseAppRequestCount(cmd);
     }
 
     public int getId() {

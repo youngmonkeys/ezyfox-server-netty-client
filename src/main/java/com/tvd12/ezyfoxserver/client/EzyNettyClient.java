@@ -9,6 +9,7 @@ import com.tvd12.ezyfoxserver.client.constant.EzyCommand;
 import com.tvd12.ezyfoxserver.client.constant.EzyConnectionStatus;
 import com.tvd12.ezyfoxserver.client.entity.*;
 import com.tvd12.ezyfoxserver.client.manager.*;
+import com.tvd12.ezyfoxserver.client.metrics.EzyMetricsRecorder;
 import com.tvd12.ezyfoxserver.client.request.EzyRequest;
 import com.tvd12.ezyfoxserver.client.request.EzyRequestSerializer;
 import com.tvd12.ezyfoxserver.client.request.EzySimpleRequestSerializer;
@@ -50,6 +51,9 @@ public abstract class EzyNettyClient
     @Getter
     @Setter
     protected EzyConnectionStatus udpStatus;
+    @Setter
+    @Getter
+    protected EzyMetricsRecorder metricsRecorder;
     @Getter
     protected final String name;
     protected final EzySetup settingUp;
@@ -82,6 +86,7 @@ public abstract class EzyNettyClient
         this.status = EzyConnectionStatus.NULL;
         this.eventLoopGroup = eventLoopGroup;
         this.nettyEventLoopGroup = nettyEventLoopGroup;
+        this.metricsRecorder = EzyMetricsRecorder.getDefault();
         this.pingManager = new EzySimplePingManager(config.getPing());
         this.pingSchedule = new EzyPingSchedule(this, eventLoopGroup);
         this.handlerManager = new EzySimpleHandlerManager(this);
@@ -180,6 +185,7 @@ public abstract class EzyNettyClient
         EzyArray array = requestSerializer.serialize(cmd, data);
         if (socketClient != null) {
             socketClient.sendMessage(array);
+            metricsRecorder.increaseSystemRequestCount(cmd);
             printSentData(cmd, data);
         }
     }
@@ -248,9 +254,5 @@ public abstract class EzyNettyClient
     @Override
     public void udpSend(EzyCommand cmd, EzyArray data) {
         throw new UnsupportedOperationException("only support TCP, use EzyUTClient instead");
-    }
-
-    public void close() {
-        socketClient.close();
     }
 }

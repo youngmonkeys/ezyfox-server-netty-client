@@ -11,6 +11,7 @@ import com.tvd12.ezyfoxserver.client.entity.EzyUser;
 import com.tvd12.ezyfoxserver.client.entity.EzyZone;
 import com.tvd12.ezyfoxserver.client.manager.EzyHandlerManager;
 import com.tvd12.ezyfoxserver.client.manager.EzyPingManager;
+import com.tvd12.ezyfoxserver.client.metrics.EzyMetricsRecorder;
 import com.tvd12.ezyfoxserver.client.request.EzyRequest;
 import com.tvd12.ezyfoxserver.client.setup.EzySetup;
 import com.tvd12.ezyfoxserver.client.socket.EzyISocketClient;
@@ -34,6 +35,10 @@ public interface EzyClient {
 
     default void disconnect() {
         disconnect(EzyDisconnectReason.CLOSE.getId());
+    }
+
+    default void close() {
+        disconnect();
     }
 
     void processEvents();
@@ -79,6 +84,8 @@ public interface EzyClient {
     EzyHandlerManager getHandlerManager();
 
     EzyConnectionType getConnectionType();
+
+    EzyMetricsRecorder getMetricsRecorder();
 
     default boolean isConnected() {
         return getStatus() == EzyConnectionStatus.CONNECTED;
