@@ -25,5 +25,6 @@ public class EzyAppResponseHandler extends EzyAbstractDataHandler {
         } else {
             logger.warn("app: {} has no handler for command: {}", app.getName(), cmd);
         }
+        app.getMetricsRecorder().increaseAppResponseCount(cmd);
     }
 }

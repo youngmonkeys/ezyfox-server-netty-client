@@ -50,6 +50,7 @@ public class EzyUTClient extends EzyTcpClient {
     public void udpSend(EzyCommand cmd, EzyArray data) {
         EzyArray array = requestSerializer.serialize(cmd, data);
         ((EzyUTSocketClient) socketClient).udpSendMessage(array);
+        metricsRecorder.increaseSystemRequestCount(cmd);
         printSentData(cmd, data);
     }
 }

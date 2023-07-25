@@ -2,9 +2,12 @@ package com.tvd12.ezyfoxserver.client;
 
 import com.tvd12.ezyfoxserver.client.config.EzyClientConfig;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.tvd12.ezyfox.util.EzyProcessor.processWithLogException;
 
 public final class EzyClients {
 
@@ -100,5 +103,13 @@ public final class EzyClients {
         synchronized (clients) {
             this.clients.clear();
         }
+    }
+
+    public void disconnectClients() {
+        List<EzyClient> clientsToDisconnect = new ArrayList<>();
+        getClients(clientsToDisconnect);
+        clientsToDisconnect.forEach(it ->
+            processWithLogException(it::disconnect)
+        );
     }
 }

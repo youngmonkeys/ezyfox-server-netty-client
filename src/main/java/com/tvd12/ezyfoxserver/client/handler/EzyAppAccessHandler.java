@@ -23,6 +23,8 @@ public class EzyAppAccessHandler extends EzyAbstractDataHandler {
     protected EzyApp newApp(EzyZone zone, EzyArray data) {
         int appId = data.get(0, int.class);
         String appName = data.get(1, String.class);
-        return new EzySimpleApp(zone, appId, appName);
+        EzySimpleApp app = new EzySimpleApp(zone, appId, appName);
+        app.setMetricsRecorder(client.getMetricsRecorder());
+        return app;
     }
 }

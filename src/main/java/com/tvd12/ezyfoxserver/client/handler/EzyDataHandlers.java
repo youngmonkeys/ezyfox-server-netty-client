@@ -32,5 +32,8 @@ public class EzyDataHandlers extends EzyAbstractHandlers {
         } else {
             logger.warn("has no handler for command: " + cmd);
         }
+        client.getMetricsRecorder().increaseSystemResponseCount(
+            cmd
+        );
     }
 }

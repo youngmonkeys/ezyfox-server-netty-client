@@ -3,6 +3,7 @@ package com.tvd12.ezyfoxserver.client.entity;
 import com.tvd12.ezyfox.entity.EzyData;
 import com.tvd12.ezyfoxserver.client.EzyClient;
 import com.tvd12.ezyfoxserver.client.handler.EzyAppDataHandler;
+import com.tvd12.ezyfoxserver.client.metrics.EzyMetricsRecorder;
 import com.tvd12.ezyfoxserver.client.request.EzyRequest;
 
 public interface EzyApp {
@@ -28,4 +29,6 @@ public interface EzyApp {
     void udpSend(String cmd, EzyData data);
 
     EzyAppDataHandler<?> getDataHandler(Object cmd);
+
+    EzyMetricsRecorder getMetricsRecorder();
 }
