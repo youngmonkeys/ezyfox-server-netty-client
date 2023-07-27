@@ -9,7 +9,7 @@ java client for ezyfox server use netty
 <dependency>
     <groupId>com.tvd12</groupId>
     <artifactId>ezyfox-server-netty-client</artifactId>
-    <version>1.1.9</version>
+    <version>1.2.1</version>
 </dependency>
 ```
 
