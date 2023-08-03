@@ -37,6 +37,9 @@ public abstract class EzyNettySocketClient extends EzySocketClient {
                 reconnectCount = 0;
                 socket = channelFuture.channel();
                 success = connectionFuture.isSuccess();
+                if (success) {
+                    postConnectionSuccessfully();
+                }
             }
         } catch (Exception e) {
             if (e instanceof ConnectException) {
@@ -54,6 +57,8 @@ public abstract class EzyNettySocketClient extends EzySocketClient {
         }
         return success;
     }
+
+    protected void postConnectionSuccessfully() throws Exception {}
 
     protected Bootstrap newBootstrap(EventLoopGroup group) {
         return new Bootstrap()

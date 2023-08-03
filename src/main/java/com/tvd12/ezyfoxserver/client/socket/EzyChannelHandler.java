@@ -61,6 +61,11 @@ public abstract class EzyChannelHandler extends SimpleChannelInboundHandler<EzyA
         socketReader.addMessage(msg);
     }
 
+    @Override
+    public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) {
+        logger.debug("exception on channel: {}", ctx.channel(), cause);
+    }
+
     @SuppressWarnings("unchecked")
     public abstract static class Builder<B extends Builder<B>> implements EzyBuilder<EzyChannelHandler> {
 

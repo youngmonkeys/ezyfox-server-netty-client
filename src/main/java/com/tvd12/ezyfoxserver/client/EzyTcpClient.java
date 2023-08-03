@@ -5,7 +5,10 @@ import com.tvd12.ezyfoxserver.client.config.EzyClientConfig;
 import com.tvd12.ezyfoxserver.client.constant.EzyConnectionType;
 import com.tvd12.ezyfoxserver.client.socket.EzyNettySocketClient;
 import com.tvd12.ezyfoxserver.client.socket.EzyTcpSocketClient;
+import com.tvd12.ezyfoxserver.client.ssl.EzySslContextFactory;
 import io.netty.channel.EventLoopGroup;
+
+import javax.net.ssl.SSLContext;
 
 public class EzyTcpClient extends EzyNettyClient {
 
@@ -24,6 +27,18 @@ public class EzyTcpClient extends EzyNettyClient {
     @Override
     protected EzyNettySocketClient newNettySocketClient() {
         return new EzyTcpSocketClient();
+    }
+
+    public void setDefaultSslContext() {
+        setSslContext(
+            EzySslContextFactory
+                .getInstance()
+                .newSslContext()
+        );
+    }
+
+    public void setSslContext(SSLContext sslContext) {
+        ((EzyTcpSocketClient) socketClient).setSslContext(sslContext);
     }
 
     @Override
