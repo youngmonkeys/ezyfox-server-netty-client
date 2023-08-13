@@ -1,35 +1,32 @@
 package com.tvd12.ezyfoxserver.client.socket;
 
-import com.tvd12.ezyfox.codec.EzyMessage;
-import com.tvd12.ezyfox.codec.EzyMessageToBytes;
-import com.tvd12.ezyfox.codec.EzyObjectToMessage;
-import com.tvd12.ezyfox.entity.EzyArray;
-import io.netty.buffer.ByteBuf;
+import com.tvd12.ezyfox.codec.EzyObjectToByteEncoder;
+import lombok.Setter;
 
 import java.nio.ByteBuffer;
 import java.nio.channels.DatagramChannel;
 
+import static com.tvd12.ezyfoxserver.client.codec.EzyPackageMessageCodecs.encodePackageToBytes;
+
+@Setter
 public class EzyUdpSocketWriter extends EzySocketWriter {
 
     protected DatagramChannel datagramChannel;
-    protected EzyMessageToBytes messageToBytes;
-    protected EzyObjectToMessage objectToMessage;
-    protected ByteBuffer writeBuffer = ByteBuffer.allocate(4096);
+    protected EzyObjectToByteEncoder objectToByteEncoder;
+    protected final ByteBuffer writeBuffer = ByteBuffer.allocate(4096);
 
     @Override
-    protected void writePacketToSocket(EzyArray packet) {
+    protected void writePacketToSocket(EzyPackage packet) {
         try {
-            EzyMessage message = objectToMessage.convert(packet);
-            ByteBuf byteBuf = messageToBytes.convert(message);
-            byte[] bytes = byteBuf.array();
+            byte[] bytes = encodePackageToBytes(objectToByteEncoder, packet);
             int bytesToWrite = bytes.length;
             ByteBuffer buffer = getWriteBuffer(writeBuffer, bytesToWrite);
             buffer.clear();
             buffer.put(bytes);
             buffer.flip();
             datagramChannel.write(buffer);
-        } catch (Exception e) {
-            logger.warn("I/O error at socket-writer", e);
+        } catch (Throwable e) {
+            logger.info("I/O error at socket-writer", e);
         }
     }
 
@@ -40,17 +37,5 @@ public class EzyUdpSocketWriter extends EzySocketWriter {
     @Override
     protected String getThreadName() {
         return "udp-socket-writer";
-    }
-
-    public void setMessageToBytes(EzyMessageToBytes messageToBytes) {
-        this.messageToBytes = messageToBytes;
-    }
-
-    public void setObjectToMessage(EzyObjectToMessage objectToMessage) {
-        this.objectToMessage = objectToMessage;
-    }
-
-    public void setDatagramChannel(DatagramChannel datagramChannel) {
-        this.datagramChannel = datagramChannel;
     }
 }

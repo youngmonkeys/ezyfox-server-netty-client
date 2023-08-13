@@ -1,22 +1,20 @@
 package com.tvd12.ezyfoxserver.client.socket;
 
-import com.tvd12.ezyfox.entity.EzyArray;
-
 public interface EzyPacketQueue {
 
     int size();
 
     void clear();
 
-    EzyArray poll();
+    EzyPackage poll();
 
-    EzyArray take() throws InterruptedException;
+    EzyPackage take() throws InterruptedException;
 
     boolean isFull();
 
     boolean isEmpty();
 
-    boolean add(EzyArray packet);
+    boolean add(EzyPackage packet);
 
     void wakeup();
 }

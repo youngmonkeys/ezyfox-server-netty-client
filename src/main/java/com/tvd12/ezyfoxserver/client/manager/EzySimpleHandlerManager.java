@@ -1,8 +1,8 @@
 package com.tvd12.ezyfoxserver.client.manager;
 
+import com.tvd12.ezyfox.constant.EzyConstant;
 import com.tvd12.ezyfoxserver.client.EzyClient;
 import com.tvd12.ezyfoxserver.client.constant.EzyCommand;
-import com.tvd12.ezyfoxserver.client.constant.EzyConstant;
 import com.tvd12.ezyfoxserver.client.event.EzyEventType;
 import com.tvd12.ezyfoxserver.client.handler.*;
 import com.tvd12.ezyfoxserver.client.socket.EzyPingSchedule;

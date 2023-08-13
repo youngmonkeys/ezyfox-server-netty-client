@@ -26,19 +26,24 @@ public class EzyTcpClient extends EzyNettyClient {
 
     @Override
     protected EzyNettySocketClient newNettySocketClient() {
-        return new EzyTcpSocketClient();
+        EzyTcpSocketClient sc = newTcpSocketClient();
+        if (isSocketEnableCertificationSSL()) {
+            SSLContext sslContext = EzySslContextFactory
+                .getInstance()
+                .newSslContext();
+            sc.setSslContext(sslContext);
+        }
+        return sc;
     }
 
-    public void setDefaultSslContext() {
-        setSslContext(
-            EzySslContextFactory
-                .getInstance()
-                .newSslContext()
-        );
+    protected EzyTcpSocketClient newTcpSocketClient() {
+        return new EzyTcpSocketClient(config);
     }
 
     public void setSslContext(SSLContext sslContext) {
-        ((EzyTcpSocketClient) socketClient).setSslContext(sslContext);
+        if (socketClient instanceof EzyTcpSocketClient) {
+            ((EzyTcpSocketClient) socketClient).setSslContext(sslContext);
+        }
     }
 
     @Override

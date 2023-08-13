@@ -3,7 +3,6 @@ package com.tvd12.ezyfoxserver.client.codec;
 import com.tvd12.ezyfox.codec.EzyDecodeState;
 import com.tvd12.ezyfox.codec.EzyIDecodeState;
 import io.netty.buffer.ByteBuf;
-import io.netty.channel.ChannelHandlerContext;
 
 import java.util.HashMap;
 import java.util.List;
@@ -19,17 +18,13 @@ public abstract class EzyDecodeHandlers {
         this.handers = builder.newHandlers();
     }
 
-    public void handle(
-        @SuppressWarnings("unused") ChannelHandlerContext ctx,
+    protected void handle(
         ByteBuf in,
+        byte[] decryptionKey,
         List<Object> out
-    ) {
-        handle(in, out);
-    }
-
-    protected void handle(ByteBuf in, List<Object> out) {
+    ) throws Exception {
         EzyDecodeHandler handler = handers.get(state);
-        while (handler != null && handler.handle(in, out)) {
+        while (handler != null && handler.handle(in, decryptionKey, out)) {
             state = handler.nextState();
             handler = handler.nextHandler();
         }

@@ -23,7 +23,7 @@ public class EzyWsClient extends EzyNettyClient {
 
     @Override
     protected EzyNettySocketClient newNettySocketClient() {
-        return new EzyWebSocketClient();
+        return new EzyWebSocketClient(config);
     }
 
     @Override

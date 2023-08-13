@@ -1,7 +1,8 @@
 package com.tvd12.ezyfoxserver.client.socket;
 
-import com.tvd12.ezyfox.codec.EzyCodecCreator;
-import com.tvd12.ezyfoxserver.client.codec.MsgPackCodecCreator;
+import com.tvd12.ezyfoxserver.client.codec.EzyNettyCodecCreator;
+import com.tvd12.ezyfoxserver.client.codec.NettyMsgPackCodecCreator;
+import com.tvd12.ezyfoxserver.client.config.EzySocketClientConfig;
 import io.netty.channel.Channel;
 import io.netty.handler.ssl.SslHandler;
 import lombok.Setter;
@@ -13,6 +14,10 @@ public class EzyTcpSocketClient extends EzyNettySocketClient {
 
     @Setter
     private SSLContext sslContext;
+
+    public EzyTcpSocketClient(EzySocketClientConfig config) {
+        super(config);
+    }
 
     @Override
     protected void parseConnectionArguments(Object... args) {
@@ -30,8 +35,11 @@ public class EzyTcpSocketClient extends EzyNettySocketClient {
     }
 
     @Override
-    protected EzyCodecCreator newCodecCreator() {
-        return new MsgPackCodecCreator();
+    protected EzyNettyCodecCreator newCodecCreator(boolean enableEncryption) {
+        return new NettyMsgPackCodecCreator(
+            enableEncryption,
+            () -> sessionKey
+        );
     }
 
     @Override

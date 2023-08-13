@@ -1,12 +1,11 @@
 package com.tvd12.ezyfoxserver.client.socket;
 
 import com.tvd12.ezyfox.codec.EzyByteToObjectDecoder;
-import com.tvd12.ezyfox.codec.EzyCodecCreator;
 import com.tvd12.ezyfox.concurrent.EzyEventLoopGroup;
 import com.tvd12.ezyfox.entity.EzyArray;
 import com.tvd12.ezyfox.util.EzyLoggable;
-import com.tvd12.ezyfoxserver.client.codec.EzyMessageToBytesFetcher;
-import com.tvd12.ezyfoxserver.client.codec.EzyObjectToMessageFetcher;
+import com.tvd12.ezyfoxserver.client.codec.EzyNettyCodecCreator;
+import com.tvd12.ezyfoxserver.client.constant.EzyDisconnectReason;
 import com.tvd12.ezyfoxserver.client.constant.EzySocketConstants;
 import com.tvd12.ezyfoxserver.client.constant.EzySocketStatus;
 import com.tvd12.ezyfoxserver.client.util.EzyValueStack;
@@ -26,6 +25,7 @@ public class EzyUdpSocketClient extends EzyLoggable {
     protected long sessionId;
     @Setter
     protected String sessionToken;
+    protected byte[] sessionKey;
     @Setter
     protected EzyEventLoopGroup eventLoopGroup;
     protected InetSocketAddress serverAddress;
@@ -33,10 +33,10 @@ public class EzyUdpSocketClient extends EzyLoggable {
     protected EzyUdpSocketReader socketReader;
     protected EzyUdpSocketWriter socketWriter;
     protected final EzyPacketQueue packetQueue;
-    protected final EzyCodecCreator codecCreator;
+    protected final EzyNettyCodecCreator codecCreator;
     protected final EzyValueStack<EzySocketStatus> socketStatuses;
 
-    public EzyUdpSocketClient(EzyCodecCreator codecCreator) {
+    public EzyUdpSocketClient(EzyNettyCodecCreator codecCreator) {
         this.codecCreator = codecCreator;
         this.packetQueue = new EzyBlockingPacketQueue();
         this.socketStatuses = new EzyValueStack<>(EzySocketStatus.NOT_CONNECT);
@@ -45,7 +45,7 @@ public class EzyUdpSocketClient extends EzyLoggable {
     public void connectTo(String host, int port) {
         EzySocketStatus status = socketStatuses.last();
         if (!isSocketConnectable(status)) {
-            logger.warn("udp socket is connecting...");
+            logger.info("udp socket is connecting...");
             return;
         }
         serverAddress = new InetSocketAddress(host, port);
@@ -72,7 +72,7 @@ public class EzyUdpSocketClient extends EzyLoggable {
                 connect1();
                 break;
             } catch (BindException e) {
-                logger.warn("fail to open udp port, re-try again");
+                logger.info("fail to open udp port, re-try again");
             }
         }
     }
@@ -105,7 +105,7 @@ public class EzyUdpSocketClient extends EzyLoggable {
                     } catch (InterruptedException e) {
                         logger.info("udp reconnect interrupted", e);
                     } catch (Throwable e) {
-                        logger.warn("reconnect to server: {} error", serverAddress, e);
+                        logger.info("reconnect to server: {} error", serverAddress, e);
                     }
                 });
                 newThread.setName("udp-reconnect");
@@ -113,7 +113,7 @@ public class EzyUdpSocketClient extends EzyLoggable {
             }
         } catch (BindException e) {
             throw e;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw new IllegalStateException("udp can't connect to: " + serverAddress, e);
         }
     }
@@ -130,7 +130,7 @@ public class EzyUdpSocketClient extends EzyLoggable {
         return 3000;
     }
 
-    public void disconnect() {
+    public void disconnect(@SuppressWarnings("unused") int reason) {
         packetQueue.clear();
         packetQueue.wakeup();
         closeSocket();
@@ -139,11 +139,16 @@ public class EzyUdpSocketClient extends EzyLoggable {
     }
 
     public void close() {
-        disconnect();
+        disconnect(EzyDisconnectReason.CLOSE.getId());
     }
 
-    public void sendMessage(EzyArray message) {
-        packetQueue.add(message);
+    public void sendMessage(EzyArray message, boolean encrypted) {
+        EzyPackage pack = new EzySimplePackage(
+            message,
+            encrypted,
+            sessionKey
+        );
+        packetQueue.add(pack);
     }
 
     public void popReadMessages(List<EzyArray> buffer) {
@@ -159,13 +164,14 @@ public class EzyUdpSocketClient extends EzyLoggable {
     }
 
     protected void updateAdapters() {
-        Object decoder = codecCreator.newDecoder(EzySocketConstants.MAX_RESPONSE_SIZE);
-        this.socketReader.setDecoder((EzyByteToObjectDecoder) decoder);
+        EzyByteToObjectDecoder decoder = codecCreator.newSocketDecoder(
+            EzySocketConstants.MAX_RESPONSE_SIZE
+        );
+        this.socketReader.setDecoder(decoder);
         this.socketReader.setEventLoopGroup(eventLoopGroup);
         this.socketWriter.setPacketQueue(packetQueue);
         this.socketWriter.setEventLoopGroup(eventLoopGroup);
-        this.socketWriter.setObjectToMessage(((EzyObjectToMessageFetcher) codecCreator).getObjectToMessage());
-        this.socketWriter.setMessageToBytes(((EzyMessageToBytesFetcher) codecCreator).getMessageToBytes());
+        this.socketWriter.setObjectToByteEncoder(codecCreator.newSocketEncoder());
     }
 
     protected void startAdapters() {
@@ -188,13 +194,18 @@ public class EzyUdpSocketClient extends EzyLoggable {
         }
     }
 
+    public void setSessionKey(byte[] sessionKey) {
+        this.sessionKey = sessionKey;
+        this.socketReader.setDecryptionKey(sessionKey);
+    }
+
     protected void closeSocket() {
         try {
             if (datagramChannel != null) {
                 datagramChannel.close();
             }
-        } catch (Exception e) {
-            logger.warn("close udp socket error", e);
+        } catch (Throwable e) {
+            logger.info("close udp socket error", e);
         }
     }
 

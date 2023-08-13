@@ -7,6 +7,7 @@ import com.tvd12.ezyfox.entity.EzyEntity;
 import com.tvd12.ezyfoxserver.client.config.EzyClientConfig;
 import com.tvd12.ezyfoxserver.client.constant.EzyCommand;
 import com.tvd12.ezyfoxserver.client.constant.EzyConnectionStatus;
+import com.tvd12.ezyfoxserver.client.constant.EzySslType;
 import com.tvd12.ezyfoxserver.client.entity.*;
 import com.tvd12.ezyfoxserver.client.manager.*;
 import com.tvd12.ezyfoxserver.client.metrics.EzyMetricsRecorder;
@@ -37,19 +38,29 @@ public abstract class EzyNettyClient
     extends EzyEntity
     implements EzyClient, EzyMeAware, EzyZoneAware {
 
-    @Getter
     @Setter
+    @Getter
     protected EzyUser me;
-    @Getter
     @Setter
+    @Getter
     protected EzyZone zone;
+    @Getter
     protected long sessionId;
+    @Setter
+    @Getter
+    protected byte[] publicKey;
+    @Setter
+    @Getter
+    protected byte[] privateKey;
+    @Getter
+    protected byte[] sessionKey;
+    @Getter
     protected String sessionToken;
-    @Getter
     @Setter
+    @Getter
     protected EzyConnectionStatus status;
-    @Getter
     @Setter
+    @Getter
     protected EzyConnectionStatus udpStatus;
     @Setter
     @Getter
@@ -136,13 +147,13 @@ public abstract class EzyNettyClient
     protected void connectTo(Object... args) {
         try {
             if (!isClientConnectable(status)) {
-                logger.warn("client has already connected to: {}", Arrays.toString(args));
+                logger.info("client has already connected to: {}", Arrays.toString(args));
                 return;
             }
             preConnect();
             socketClient.connectTo(args);
             setStatus(EzyConnectionStatus.CONNECTING);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             logger.error("connect to server error", e);
         }
     }
@@ -152,7 +163,7 @@ public abstract class EzyNettyClient
         if (!isClientReconnectable(status)) {
             String host = socketClient.getHost();
             int port = socketClient.getPort();
-            logger.warn("client has already connected to: " + host + ":" + port);
+            logger.info("client has already connected to: " + host + ":" + port);
             return false;
         }
         preConnect();
@@ -174,17 +185,17 @@ public abstract class EzyNettyClient
     }
 
     @Override
-    public void send(EzyRequest request) {
+    public void send(EzyRequest request, boolean encrypted) {
         Object cmd = request.getCommand();
         EzyData data = request.serialize();
-        send((EzyCommand) cmd, (EzyArray) data);
+        send((EzyCommand) cmd, (EzyArray) data, encrypted);
     }
 
     @Override
-    public void send(EzyCommand cmd, EzyArray data) {
+    public void send(EzyCommand cmd, EzyArray data, boolean encrypted) {
         EzyArray array = requestSerializer.serialize(cmd, data);
         if (socketClient != null) {
-            socketClient.sendMessage(array);
+            socketClient.sendMessage(array, encrypted);
             metricsRecorder.increaseSystemRequestCount(cmd);
             printSentData(cmd, data);
         }
@@ -193,6 +204,31 @@ public abstract class EzyNettyClient
     @Override
     public void processEvents() {
         socketClient.processEventMessages();
+    }
+
+    @Override
+    public boolean isSocketEnableSSL() {
+        return config.isSocketEnableSSL();
+    }
+
+    @Override
+    public EzySslType getSocketSslType() {
+        return config.getSocketSslType();
+    }
+
+    @Override
+    public boolean isSocketEnableEncryption() {
+        return config.isSocketEnableEncryption();
+    }
+
+    @Override
+    public boolean isSocketEnableCertificationSSL() {
+        return config.isSocketEnableCertificationSSL();
+    }
+
+    @Override
+    public boolean isEnableDebug() {
+        return config.isEnableDebug();
     }
 
     @Override
@@ -205,6 +241,12 @@ public abstract class EzyNettyClient
     public void setSessionToken(String token) {
         this.sessionToken = token;
         this.socketClient.setSessionToken(sessionToken);
+    }
+
+    @Override
+    public void setSessionKey(byte[] sessionKey) {
+        this.sessionKey = sessionKey;
+        this.socketClient.setSessionKey(sessionKey);
     }
 
     @Override
@@ -247,12 +289,17 @@ public abstract class EzyNettyClient
     }
 
     @Override
-    public void udpSend(EzyRequest request) {
+    public void udpSend(EzyRequest request, boolean encrypted) {
         throw new UnsupportedOperationException("only support TCP, use EzyUTClient instead");
     }
 
     @Override
-    public void udpSend(EzyCommand cmd, EzyArray data) {
+    public void udpSend(EzyCommand cmd, EzyArray data, boolean encrypted) {
         throw new UnsupportedOperationException("only support TCP, use EzyUTClient instead");
+    }
+
+    @Override
+    public void close() {
+        socketClient.close();
     }
 }

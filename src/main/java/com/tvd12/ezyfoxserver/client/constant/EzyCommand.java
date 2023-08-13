@@ -1,6 +1,7 @@
 package com.tvd12.ezyfoxserver.client.constant;
 
 import com.tvd12.ezyfox.collect.Sets;
+import com.tvd12.ezyfox.constant.EzyConstant;
 
 import java.util.Map;
 import java.util.Set;

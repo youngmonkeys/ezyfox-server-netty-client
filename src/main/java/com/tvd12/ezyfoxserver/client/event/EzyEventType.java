@@ -1,6 +1,6 @@
 package com.tvd12.ezyfoxserver.client.event;
 
-import com.tvd12.ezyfoxserver.client.constant.EzyConstant;
+import com.tvd12.ezyfox.constant.EzyConstant;
 
 public enum EzyEventType implements EzyConstant {
 

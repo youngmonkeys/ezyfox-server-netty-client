@@ -1,7 +1,7 @@
 package com.tvd12.ezyfoxserver.client.handler;
 
+import com.tvd12.ezyfox.constant.EzyConstant;
 import com.tvd12.ezyfoxserver.client.EzyClient;
-import com.tvd12.ezyfoxserver.client.constant.EzyConstant;
 import com.tvd12.ezyfoxserver.client.event.EzyEvent;
 import com.tvd12.ezyfoxserver.client.event.EzyEventType;
 import com.tvd12.ezyfoxserver.client.socket.EzyPingSchedule;
@@ -35,7 +35,7 @@ public class EzyEventHandlers extends EzyAbstractHandlers {
         if (handler != null) {
             handler.handle(event);
         } else {
-            logger.warn("has no handler for event type: " + eventType);
+            logger.info("has no handler for event type: " + eventType);
         }
     }
 }

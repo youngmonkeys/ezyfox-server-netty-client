@@ -16,17 +16,41 @@ public interface EzyApp {
 
     EzyZone getZone();
 
-    void send(EzyRequest request);
+    default void send(EzyRequest request) {
+        send(request, false);
+    }
 
-    void send(String cmd);
+    void send(EzyRequest request, boolean encrypted);
 
-    void send(String cmd, EzyData data);
+    default void send(String cmd) {
+        send(cmd, false);
+    }
 
-    void udpSend(EzyRequest request);
+    void send(String cmd, boolean encrypted);
 
-    void udpSend(String cmd);
+    default void send(String cmd, EzyData data) {
+        send(cmd, data, false);
+    }
 
-    void udpSend(String cmd, EzyData data);
+    void send(String cmd, EzyData data, boolean encrypted);
+
+    default void udpSend(EzyRequest request) {
+        udpSend(request, false);
+    }
+
+    void udpSend(EzyRequest request, boolean encrypted);
+
+    default void udpSend(String cmd) {
+        udpSend(cmd, false);
+    }
+
+    void udpSend(String cmd, boolean encrypted);
+
+    default void udpSend(String cmd, EzyData data) {
+        udpSend(cmd, data, false);
+    }
+
+    void udpSend(String cmd, EzyData data, boolean encrypted);
 
     EzyAppDataHandler<?> getDataHandler(Object cmd);
 

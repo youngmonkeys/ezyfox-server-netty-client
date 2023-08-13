@@ -1,14 +1,14 @@
 package com.tvd12.ezyfoxserver.client.socket;
 
 import com.tvd12.ezyfox.builder.EzyBuilder;
-import com.tvd12.ezyfox.codec.EzyCodecCreator;
 import com.tvd12.ezyfoxserver.client.codec.EzyCombinedCodec;
+import com.tvd12.ezyfoxserver.client.codec.EzyNettyCodecCreator;
 import com.tvd12.ezyfoxserver.client.constant.EzySocketConstants;
 import io.netty.channel.*;
 
 public abstract class EzyAbstractChannelInitializer extends ChannelInitializer<Channel> {
 
-    protected final EzyCodecCreator codecCreator;
+    protected final EzyNettyCodecCreator codecCreator;
     protected final EzySocketReader socketReader;
     protected final EzyConnectionFuture connectionFuture;
 
@@ -29,9 +29,10 @@ public abstract class EzyAbstractChannelInitializer extends ChannelInitializer<C
 
     private void initChannel1(Channel ch) {
         ChannelPipeline pipeline = ch.pipeline();
-        ChannelOutboundHandler encoder = (ChannelOutboundHandler) codecCreator.newEncoder();
-        ChannelInboundHandlerAdapter decoder =
-            (ChannelInboundHandlerAdapter) codecCreator.newDecoder(EzySocketConstants.MAX_RESPONSE_SIZE);
+        ChannelOutboundHandler encoder = codecCreator.newNettyEncoder();
+        ChannelInboundHandlerAdapter decoder = codecCreator.newNettyDecoder(
+            EzySocketConstants.MAX_RESPONSE_SIZE
+        );
         pipeline.addLast("codec-1", new EzyCombinedCodec(decoder, encoder));
         pipeline.addLast("handler", createDataHandler());
         pipeline.addLast("codec-2", new EzyCombinedCodec(decoder, encoder));
@@ -50,11 +51,11 @@ public abstract class EzyAbstractChannelInitializer extends ChannelInitializer<C
     public abstract static class Builder<B extends Builder<B>>
         implements EzyBuilder<EzyAbstractChannelInitializer> {
 
-        protected EzyCodecCreator codecCreator;
+        protected EzyNettyCodecCreator codecCreator;
         protected EzySocketReader socketReader;
         protected EzyConnectionFuture connectionFuture;
 
-        public B codecCreator(EzyCodecCreator codecCreator) {
+        public B codecCreator(EzyNettyCodecCreator codecCreator) {
             this.codecCreator = codecCreator;
             return (B) this;
         }

@@ -1,32 +1,37 @@
 package com.tvd12.ezyfoxserver.client.codec;
 
-import com.tvd12.ezyfox.codec.*;
+import com.tvd12.ezyfox.codec.EzyByteToObjectDecoder;
+import com.tvd12.ezyfox.codec.EzyDecodeState;
+import com.tvd12.ezyfox.codec.EzyIDecodeState;
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.handler.codec.ByteToMessageDecoder;
 import lombok.AllArgsConstructor;
 import lombok.Setter;
 
-import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
+import java.util.function.Supplier;
 
 import static com.tvd12.ezyfox.codec.EzyDecodeState.*;
+import static com.tvd12.ezyfoxserver.client.codec.EzyPackageMessageCodecs.decodeMessageToObject;
 
-public class MsgPackByteToMessageDecoder
-    extends ByteToMessageDecoder
-    implements EzyByteToObjectDecoder {
+public class NettyMsgPackByteToMessageDecoder extends ByteToMessageDecoder {
 
     protected final Handlers handlers;
+    protected final EzyByteToObjectDecoder byteToObjectDecoder;
+    protected final Supplier<byte[]> decryptionKeySupplier;
 
-    public MsgPackByteToMessageDecoder(
-        EzyMessageDeserializer deserializer,
-        int maxSize
+    public NettyMsgPackByteToMessageDecoder(
+        EzyByteToObjectDecoder byteToObjectDecoder,
+        int maxSize,
+        Supplier<byte[]> decryptionKeySupplier
     ) {
+        this.byteToObjectDecoder = byteToObjectDecoder;
+        this.decryptionKeySupplier = decryptionKeySupplier;
         this.handlers = Handlers.builder()
             .maxSize(maxSize)
-            .deserializer(deserializer)
+            .byteToObjectDecoder(byteToObjectDecoder)
             .build();
     }
 
@@ -35,23 +40,10 @@ public class MsgPackByteToMessageDecoder
         ChannelHandlerContext ctx,
         ByteBuf in,
         List<Object> out
-    ) {
-        handlers.handle(ctx, in, out);
+    ) throws Exception {
+        byte[] decryptionKey = decryptionKeySupplier.get();
+        handlers.handle(in, decryptionKey, out);
     }
-
-    @Override
-    public Object decode(EzyMessage message) {
-        return handlers.decode(message);
-    }
-
-    @Override
-    public void decode(ByteBuffer bytes, Queue<EzyMessage> queue) {
-        throw new UnsupportedOperationException("unsupported");
-    }
-
-    @Override
-    public void reset() {}
-
 
     @Setter
     public abstract static class AbstractHandler implements EzyDecodeHandler {
@@ -115,7 +107,7 @@ public class MsgPackByteToMessageDecoder
     @AllArgsConstructor
     public static class ReadMessageContent extends AbstractHandler {
 
-        protected EzyMessageDeserializer deserializer;
+        protected EzyByteToObjectDecoder byteToObjectDecoder;
 
         @Override
         public EzyIDecodeState nextState() {
@@ -123,45 +115,40 @@ public class MsgPackByteToMessageDecoder
         }
 
         @Override
-        public boolean handle(ByteBuf in, List<Object> out) {
+        public boolean handle(
+            ByteBuf in,
+            byte[] decryptionKey,
+            List<Object> out
+        ) throws Exception {
             if (!messageReader.readContent(in)) {
                 return false;
             }
-            processMessage(messageReader.get(), out);
+            Object data = decodeMessageToObject(
+                byteToObjectDecoder,
+                messageReader.get(),
+                decryptionKey
+            );
+            out.add(data);
             return true;
         }
-
-        private void processMessage(EzyMessage msg, List<Object> out) {
-            Object contentBytes = readMessageContent(msg.getContent());
-            out.add(contentBytes);
-        }
-
-        private Object readMessageContent(byte[] content) {
-            return deserializer.deserialize(content);
-        }
-
     }
 
     public static class Handlers extends EzyDecodeHandlers {
 
-        protected final EzyMessageDeserializer deserializer;
+        protected final EzyByteToObjectDecoder byteToObjectDecoder;
 
         protected Handlers(Builder builder) {
             super(builder);
-            this.deserializer = builder.deserializer;
+            this.byteToObjectDecoder = builder.byteToObjectDecoder;
         }
 
         public static Builder builder() {
             return new Builder();
         }
 
-        public Object decode(EzyMessage message) {
-            return deserializer.deserialize(message.getContent());
-        }
-
         public static class Builder extends AbstractBuilder {
             protected int maxSize;
-            protected EzyMessageDeserializer deserializer;
+            protected EzyByteToObjectDecoder byteToObjectDecoder;
             protected EzyByteBufMessageReader messageReader = new EzyByteBufMessageReader();
 
             public Builder maxSize(int maxSize) {
@@ -169,8 +156,8 @@ public class MsgPackByteToMessageDecoder
                 return this;
             }
 
-            public Builder deserializer(EzyMessageDeserializer deserializer) {
-                this.deserializer = deserializer;
+            public Builder byteToObjectDecoder(EzyByteToObjectDecoder byteToObjectDecoder) {
+                this.byteToObjectDecoder = byteToObjectDecoder;
                 return this;
             }
 
@@ -184,7 +171,7 @@ public class MsgPackByteToMessageDecoder
                 EzyDecodeHandler readMessageHeader = new ReadMessageHeader();
                 EzyDecodeHandler prepareMessage = new PrepareMessage();
                 EzyDecodeHandler readMessageSize = new ReadMessageSize(maxSize);
-                EzyDecodeHandler readMessageContent = new ReadMessageContent(deserializer);
+                EzyDecodeHandler readMessageContent = new ReadMessageContent(byteToObjectDecoder);
                 answer.put(PREPARE_MESSAGE, newHandler(prepareMessage, readMessageHeader));
                 answer.put(READ_MESSAGE_HEADER, newHandler(readMessageHeader, readMessageSize));
                 answer.put(READ_MESSAGE_SIZE, newHandler(readMessageSize, readMessageContent));

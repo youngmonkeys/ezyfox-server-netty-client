@@ -39,6 +39,8 @@ public abstract class EzySocketClient
     @Setter
     protected String sessionToken;
     @Setter
+    protected byte[] sessionKey;
+    @Setter
     protected EzyReconnectConfig reconnectConfig;
     protected EzyHandlerManager handlerManager;
     @Setter
@@ -74,7 +76,7 @@ public abstract class EzySocketClient
     public void connectTo(Object... args) {
         EzySocketStatus status = socketStatuses.last();
         if (!isSocketConnectable(status)) {
-            logger.warn("socket is connecting...");
+            logger.info("socket is connecting...");
             return;
         }
         this.socketStatuses.push(EzySocketStatus.CONNECTING);
@@ -89,7 +91,7 @@ public abstract class EzySocketClient
     public boolean reconnect() {
         EzySocketStatus status = socketStatuses.last();
         if (!isSocketReconnectable(status)) {
-            logger.warn("socket is not in a reconnectable status");
+            logger.info("socket is not in a reconnectable status");
             return false;
         }
         int maxReconnectCount = reconnectConfig.getMaxReconnectCount();
@@ -166,7 +168,7 @@ public abstract class EzySocketClient
             }
             connect2();
         } catch (Throwable e) {
-            logger.warn("can not connect to server", e);
+            logger.info("can not connect to server", e);
         }
     }
 
@@ -226,8 +228,14 @@ public abstract class EzySocketClient
         pingSchedule.shutdown();
     }
 
-    public void sendMessage(EzyArray message) {
-        packetQueue.add(message);
+    @Override
+    public void sendMessage(EzyArray message, boolean encrypted) {
+        EzyPackage pack = new EzySimplePackage(
+            message,
+            encrypted,
+            sessionKey
+        );
+        packetQueue.add(pack);
     }
 
     public void processEventMessages() {

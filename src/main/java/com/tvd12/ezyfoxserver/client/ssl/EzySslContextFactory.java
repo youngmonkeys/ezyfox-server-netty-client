@@ -29,7 +29,7 @@ public class EzySslContextFactory extends EzyLoggable {
             SSLContext context = SSLContext.getInstance(getProtocol());
             context.init(null, trustManagers, new SecureRandom());
             return context;
-        } catch (Exception e) {
+        } catch (Throwable e) {
             throw new IllegalStateException("create ssl context error", e);
         }
     }
