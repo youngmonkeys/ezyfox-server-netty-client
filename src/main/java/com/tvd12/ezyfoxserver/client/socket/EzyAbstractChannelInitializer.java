@@ -26,8 +26,17 @@ public abstract class EzyAbstractChannelInitializer extends ChannelInitializer<C
 
     @Override
     protected final void initChannel(Channel ch) {
+        initSslHandlerIfNeed(ch);
         initChannel0(ch);
         initChannel1(ch);
+    }
+
+    protected void initSslHandlerIfNeed(Channel ch) {
+        if (sslContext != null) {
+            SSLEngine engine = sslContext.createSSLEngine();
+            engine.setUseClientMode(true);
+            ch.pipeline().addLast("ssl", new SslHandler(engine));
+        }
     }
 
     protected void initChannel0(Channel ch) {}
@@ -38,11 +47,6 @@ public abstract class EzyAbstractChannelInitializer extends ChannelInitializer<C
         ChannelInboundHandlerAdapter decoder = codecCreator.newNettyDecoder(
             EzySocketConstants.MAX_RESPONSE_SIZE
         );
-        if (sslContext != null) {
-            SSLEngine engine = sslContext.createSSLEngine();
-            engine.setUseClientMode(true);
-            pipeline.addLast("ssl", new SslHandler(engine));
-        }
         pipeline
             .addLast("codec-1", new EzyCombinedCodec(decoder, encoder))
             .addLast("handler", createDataHandler())
