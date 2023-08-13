@@ -40,12 +40,6 @@ public class EzyTcpClient extends EzyNettyClient {
         return new EzyTcpSocketClient(config);
     }
 
-    public void setSslContext(SSLContext sslContext) {
-        if (socketClient instanceof EzyTcpSocketClient) {
-            ((EzyTcpSocketClient) socketClient).setSslContext(sslContext);
-        }
-    }
-
     @Override
     public EzyConnectionType getConnectionType() {
         return EzyConnectionType.SOCKET;

@@ -26,6 +26,7 @@ import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.net.ssl.SSLContext;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -224,6 +225,10 @@ public abstract class EzyNettyClient
     @Override
     public boolean isSocketEnableCertificationSSL() {
         return config.isSocketEnableCertificationSSL();
+    }
+
+    public void setSslContext(SSLContext sslContext) {
+        ((EzyNettySocketClient) socketClient).setSslContext(sslContext);
     }
 
     @Override

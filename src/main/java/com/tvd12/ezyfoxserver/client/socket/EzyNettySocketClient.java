@@ -9,6 +9,7 @@ import io.netty.channel.*;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.Setter;
 
+import javax.net.ssl.SSLContext;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
@@ -16,6 +17,8 @@ import java.net.UnknownHostException;
 public abstract class EzyNettySocketClient extends EzySocketClient {
 
     protected Channel socket;
+    @Setter
+    protected SSLContext sslContext;
     @Setter
     protected EventLoopGroup nettyEventLoopGroup;
     protected EventLoopGroup internalEventLoopGroup;
@@ -79,6 +82,7 @@ public abstract class EzyNettySocketClient extends EzySocketClient {
 
     protected ChannelInitializer<Channel> newChannelInitializer() {
         return newChannelInitializerBuilder()
+            .sslContext(sslContext)
             .codecCreator(codecCreator)
             .socketReader(socketReader)
             .connectionFuture(connectionFuture)

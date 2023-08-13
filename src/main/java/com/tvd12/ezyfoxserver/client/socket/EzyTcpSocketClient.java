@@ -5,15 +5,10 @@ import com.tvd12.ezyfoxserver.client.codec.NettyMsgPackCodecCreator;
 import com.tvd12.ezyfoxserver.client.config.EzySocketClientConfig;
 import io.netty.channel.Channel;
 import io.netty.handler.ssl.SslHandler;
-import lombok.Setter;
 
-import javax.net.ssl.SSLContext;
 import java.util.concurrent.Future;
 
 public class EzyTcpSocketClient extends EzyNettySocketClient {
-
-    @Setter
-    private SSLContext sslContext;
 
     public EzyTcpSocketClient(EzySocketClientConfig config) {
         super(config);
