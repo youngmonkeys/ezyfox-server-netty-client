@@ -25,6 +25,7 @@ public class EzyUdpSocketClient extends EzyLoggable {
     protected long sessionId;
     @Setter
     protected String sessionToken;
+    @Setter
     protected byte[] sessionKey;
     @Setter
     protected EzyEventLoopGroup eventLoopGroup;
@@ -175,6 +176,7 @@ public class EzyUdpSocketClient extends EzyLoggable {
     }
 
     protected void startAdapters() {
+        this.socketReader.setDecryptionKey(sessionKey);
         this.socketReader.setDatagramChannel(datagramChannel);
         this.socketReader.start();
         this.socketWriter.setDatagramChannel(datagramChannel);
@@ -192,11 +194,6 @@ public class EzyUdpSocketClient extends EzyLoggable {
         if (adapter != null) {
             adapter.stop();
         }
-    }
-
-    public void setSessionKey(byte[] sessionKey) {
-        this.sessionKey = sessionKey;
-        this.socketReader.setDecryptionKey(sessionKey);
     }
 
     protected void closeSocket() {

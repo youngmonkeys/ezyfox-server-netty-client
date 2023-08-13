@@ -34,12 +34,6 @@ public class EzyUTSocketClient extends EzyTcpSocketClient {
     }
 
     @Override
-    public void setSessionKey(byte[] sessionKey) {
-        super.setSessionKey(sessionKey);
-        this.udpClient.setSessionKey(sessionKey);
-    }
-
-    @Override
     protected void popReadMessages() {
         super.popReadMessages();
         this.udpClient.popReadMessages(localMessageQueue);
