@@ -23,7 +23,7 @@ public abstract class EzySocketWriter extends EzySocketAdapter {
                 logger.info("socket-writer thread interrupted", e);
                 return;
             } catch (Throwable e) {
-                logger.info("problems in socket-writer main loop, thread", e);
+                logger.info("problems in socket-writer", e);
                 return;
             }
         }
@@ -41,7 +41,7 @@ public abstract class EzySocketWriter extends EzySocketAdapter {
             }
             writePacketToSocket(packet);
         } catch (Throwable e) {
-            logger.info("problems in socket-writer main loop, thread", e);
+            logger.info("problems in socket-writer event loop", e);
             return false;
         }
         return true;

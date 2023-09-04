@@ -82,7 +82,7 @@ public class EzyUdpSocketReader extends EzySocketAdapter {
             buffer.get(binary);
             handleReceivedBytes(binary);
         } catch (Throwable e) {
-            logger.info("I/O error at socket-reader", e);
+            logger.info("I/O error at socket-reader event loop", e);
             return false;
         }
         return true;
