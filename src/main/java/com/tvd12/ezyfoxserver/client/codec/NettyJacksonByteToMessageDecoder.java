@@ -7,11 +7,11 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 
 import java.util.List;
 
-public class JacksonByteToMessageDecoder extends MessageToMessageDecoder<TextWebSocketFrame> {
+public class NettyJacksonByteToMessageDecoder extends MessageToMessageDecoder<TextWebSocketFrame> {
 
     private final EzyMessageDeserializer deserializer;
 
-    public JacksonByteToMessageDecoder(EzyMessageDeserializer deserializer) {
+    public NettyJacksonByteToMessageDecoder(EzyMessageDeserializer deserializer) {
         this.deserializer = deserializer;
     }
 

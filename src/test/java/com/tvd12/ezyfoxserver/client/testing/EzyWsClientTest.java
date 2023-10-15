@@ -13,13 +13,13 @@ public class EzyWsClientTest {
     public void test() throws Exception {
         EzyClientConfig config = EzyClientConfig.builder()
             .clientName("hello-word")
-            .zoneName("hello-world")
+            .zoneName("example")
             .build();
 
         EzyWsClient client = new EzyWsClient(config);
         ClientSetup.getInstance().setup(client);
-//		client.connect("ws://127.0.0.1:2208/ws");
-        client.connect("wss://ws.tvd12.com/ws");
+		// client.connect("ws://127.0.0.1:2208/ws");
+        client.connect("wss://ws.tvd12.com:2812/ws");
         //noinspection InfiniteLoopStatement
         while (true) {
             client.processEvents();

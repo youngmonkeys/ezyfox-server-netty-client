@@ -1,6 +1,5 @@
 package com.tvd12.ezyfoxserver.client.socket;
 
-import com.tvd12.ezyfox.entity.EzyArray;
 import lombok.Setter;
 
 public abstract class EzySocketWriter extends EzySocketAdapter {
@@ -15,16 +14,16 @@ public abstract class EzySocketWriter extends EzySocketAdapter {
                 if (!active) {
                     return;
                 }
-                EzyArray packet = packetQueue.take();
+                EzyPackage packet = packetQueue.take();
                 if (packet == null) {
                     return;
                 }
                 writePacketToSocket(packet);
             } catch (InterruptedException e) {
-                logger.warn("socket-writer thread interrupted", e);
+                logger.info("socket-writer thread interrupted", e);
                 return;
-            } catch (Exception e) {
-                logger.warn("problems in socket-writer main loop, thread", e);
+            } catch (Throwable e) {
+                logger.info("problems in socket-writer", e);
                 return;
             }
         }
@@ -36,19 +35,19 @@ public abstract class EzySocketWriter extends EzySocketAdapter {
             if (!active) {
                 return false;
             }
-            EzyArray packet = packetQueue.poll();
+            EzyPackage packet = packetQueue.poll();
             if (packet == null) {
                 return true;
             }
             writePacketToSocket(packet);
-        } catch (Exception e) {
-            logger.warn("problems in socket-writer main loop, thread", e);
+        } catch (Throwable e) {
+            logger.info("problems in socket-writer event loop", e);
             return false;
         }
         return true;
     }
 
-    protected abstract void writePacketToSocket(EzyArray packet);
+    protected abstract void writePacketToSocket(EzyPackage packet);
 
     @Override
     protected String getThreadName() {

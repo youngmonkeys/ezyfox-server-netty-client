@@ -1,7 +1,8 @@
 package com.tvd12.ezyfoxserver.client.socket;
 
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler;
+
+import static io.netty.handler.codec.http.websocketx.WebSocketClientProtocolHandler.ClientHandshakeStateEvent.HANDSHAKE_COMPLETE;
 
 public class EzyWebSocketChannelHandler extends EzyChannelHandler {
 
@@ -14,9 +15,9 @@ public class EzyWebSocketChannelHandler extends EzyChannelHandler {
     }
 
     @Override
-    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) throws Exception {
-        logger.debug("channel: {} event: {} trigged", ctx.channel(), evt);
-        if (evt.equals(WebSocketClientProtocolHandler.ClientHandshakeStateEvent.HANDSHAKE_COMPLETE)) {
+    public void userEventTriggered(ChannelHandlerContext ctx, Object evt) {
+        logger.debug("channel: {} event: {} triggered", ctx.channel(), evt);
+        if (evt.equals(HANDSHAKE_COMPLETE)) {
             connectionActive(ctx);
         }
     }

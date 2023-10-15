@@ -1,14 +1,12 @@
 package com.tvd12.ezyfoxserver.client.socket;
 
-import com.tvd12.ezyfox.entity.EzyArray;
-
 import java.util.LinkedList;
 import java.util.Queue;
 
 public class EzyBlockingPacketQueue implements EzyPacketQueue {
 
     protected final int capacity;
-    protected final Queue<EzyArray> queue;
+    protected final Queue<EzyPackage> queue;
 
     public EzyBlockingPacketQueue() {
         this(10000);
@@ -34,14 +32,14 @@ public class EzyBlockingPacketQueue implements EzyPacketQueue {
     }
 
     @Override
-    public EzyArray poll() {
+    public EzyPackage poll() {
         synchronized (this) {
             return queue.poll();
         }
     }
 
     @Override
-    public EzyArray take() throws InterruptedException {
+    public EzyPackage take() throws InterruptedException {
         synchronized (this) {
             while (queue.isEmpty()) {
                 wait();
@@ -67,7 +65,7 @@ public class EzyBlockingPacketQueue implements EzyPacketQueue {
     }
 
     @Override
-    public boolean add(EzyArray packet) {
+    public boolean add(EzyPackage packet) {
         synchronized (this) {
             int size = queue.size();
             if (size >= capacity) {

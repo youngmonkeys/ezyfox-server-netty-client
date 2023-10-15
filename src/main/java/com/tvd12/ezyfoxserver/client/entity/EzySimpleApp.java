@@ -33,17 +33,17 @@ public class EzySimpleApp extends EzyEntity implements EzyApp {
         this.metricsRecorder = EzyMetricsRecorder.getDefault();
     }
 
-    public void send(EzyRequest request) {
+    public void send(EzyRequest request, boolean encrypted) {
         String cmd = (String) request.getCommand();
         EzyData data = request.serialize();
-        send(cmd, data);
+        send(cmd, data, encrypted);
     }
 
-    public void send(String cmd) {
-        send(cmd, EzyEntityFactory.EMPTY_OBJECT);
+    public void send(String cmd, boolean encrypted) {
+        send(cmd, EzyEntityFactory.EMPTY_OBJECT, encrypted);
     }
 
-    public void send(String cmd, EzyData data) {
+    public void send(String cmd, EzyData data, boolean encrypted) {
         EzyArrayBuilder commandData = EzyEntityFactory.newArrayBuilder()
             .append(cmd)
             .append(data);
@@ -51,29 +51,29 @@ public class EzySimpleApp extends EzyEntity implements EzyApp {
             .append(id)
             .append(commandData.build())
             .build();
-        client.send(EzyCommand.APP_REQUEST, requestData);
+        client.send(EzyCommand.APP_REQUEST, requestData, encrypted);
         metricsRecorder.increaseAppRequestCount(cmd);
     }
 
     @Override
-    public void udpSend(EzyRequest request) {
+    public void udpSend(EzyRequest request, boolean encrypted) {
         String cmd = (String) request.getCommand();
         EzyData data = request.serialize();
-        udpSend(cmd, data);
+        udpSend(cmd, data, encrypted);
     }
 
     @Override
-    public void udpSend(String cmd) {
-        udpSend(cmd, EzyEntityFactory.EMPTY_OBJECT);
+    public void udpSend(String cmd, boolean encrypted) {
+        udpSend(cmd, EzyEntityFactory.EMPTY_OBJECT, encrypted);
     }
 
     @Override
-    public void udpSend(String cmd, EzyData data) {
+    public void udpSend(String cmd, EzyData data, boolean encrypted) {
         EzyArray commandData = EzyEntityFactory.newArray();
         commandData.add(cmd, data);
         EzyArray requestData = EzyEntityFactory.newArray();
         requestData.add(id, commandData);
-        client.udpSend(EzyCommand.APP_REQUEST, requestData);
+        client.udpSend(EzyCommand.APP_REQUEST, requestData, encrypted);
         metricsRecorder.increaseAppRequestCount(cmd);
     }
 

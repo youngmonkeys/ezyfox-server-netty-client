@@ -1,25 +1,35 @@
 package com.tvd12.ezyfoxserver.client.socket;
 
-import com.tvd12.ezyfox.codec.EzyCodecCreator;
+import com.tvd12.ezyfoxserver.client.codec.EzyNettyCodecCreator;
 import com.tvd12.ezyfoxserver.client.concurrent.EzyNettyEventLoopGroup;
+import com.tvd12.ezyfoxserver.client.config.EzySocketClientConfig;
 import com.tvd12.ezyfoxserver.client.constant.EzyConnectionFailedReason;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.*;
 import io.netty.channel.socket.nio.NioSocketChannel;
 import lombok.Setter;
 
+import javax.net.ssl.SSLContext;
 import java.net.ConnectException;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
 public abstract class EzyNettySocketClient extends EzySocketClient {
 
+    protected Channel socket;
+    @Setter
+    protected SSLContext sslContext;
     @Setter
     protected EventLoopGroup nettyEventLoopGroup;
     protected EventLoopGroup internalEventLoopGroup;
-    protected Channel socket;
     protected EzyConnectionFuture connectionFuture;
-    protected final EzyCodecCreator codecCreator = newCodecCreator();
+    protected final EzyNettyCodecCreator codecCreator;
+
+    public EzyNettySocketClient(EzySocketClientConfig config) {
+        this.codecCreator = newCodecCreator(
+            config.isSocketEnableEncryption()
+        );
+    }
 
     @Override
     protected boolean connectNow() {
@@ -37,8 +47,11 @@ public abstract class EzyNettySocketClient extends EzySocketClient {
                 reconnectCount = 0;
                 socket = channelFuture.channel();
                 success = connectionFuture.isSuccess();
+                if (success) {
+                    postConnectionSuccessfully();
+                }
             }
-        } catch (Exception e) {
+        } catch (Throwable e) {
             if (e instanceof ConnectException) {
                 ConnectException c = (ConnectException) e;
                 if ("Network is unreachable".equalsIgnoreCase(c.getMessage())) {
@@ -55,6 +68,8 @@ public abstract class EzyNettySocketClient extends EzySocketClient {
         return success;
     }
 
+    protected void postConnectionSuccessfully() throws Exception {}
+
     protected Bootstrap newBootstrap(EventLoopGroup group) {
         return new Bootstrap()
             .group(group)
@@ -67,13 +82,14 @@ public abstract class EzyNettySocketClient extends EzySocketClient {
 
     protected ChannelInitializer<Channel> newChannelInitializer() {
         return newChannelInitializerBuilder()
+            .sslContext(sslContext)
             .codecCreator(codecCreator)
             .socketReader(socketReader)
             .connectionFuture(connectionFuture)
             .build();
     }
 
-    protected abstract EzyCodecCreator newCodecCreator();
+    protected abstract EzyNettyCodecCreator newCodecCreator(boolean enableEncryption);
 
     protected abstract EzyAbstractChannelInitializer.Builder<?> newChannelInitializerBuilder();
 
@@ -103,8 +119,8 @@ public abstract class EzyNettySocketClient extends EzySocketClient {
                     internalEventLoopGroup.shutdownGracefully();
                 }
             }
-        } catch (Exception e) {
-            logger.warn("close socket error");
+        } catch (Throwable e) {
+            logger.info("close socket error");
         }
     }
 }

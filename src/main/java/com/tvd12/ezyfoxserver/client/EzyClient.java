@@ -2,10 +2,7 @@ package com.tvd12.ezyfoxserver.client;
 
 import com.tvd12.ezyfox.entity.EzyArray;
 import com.tvd12.ezyfoxserver.client.config.EzyClientConfig;
-import com.tvd12.ezyfoxserver.client.constant.EzyCommand;
-import com.tvd12.ezyfoxserver.client.constant.EzyConnectionStatus;
-import com.tvd12.ezyfoxserver.client.constant.EzyConnectionType;
-import com.tvd12.ezyfoxserver.client.constant.EzyDisconnectReason;
+import com.tvd12.ezyfoxserver.client.constant.*;
 import com.tvd12.ezyfoxserver.client.entity.EzyApp;
 import com.tvd12.ezyfoxserver.client.entity.EzyUser;
 import com.tvd12.ezyfoxserver.client.entity.EzyZone;
@@ -27,9 +24,17 @@ public interface EzyClient {
 
     boolean reconnect();
 
-    void send(EzyRequest request);
+    default void send(EzyRequest request) {
+        send(request, false);
+    }
 
-    void send(EzyCommand cmd, EzyArray data);
+    void send(EzyRequest request, boolean encrypted);
+
+    default void send(EzyCommand cmd, EzyArray data) {
+        send(cmd, data, false);
+    }
+
+    void send(EzyCommand cmd, EzyArray data, boolean encrypted);
 
     void disconnect(int reason);
 
@@ -47,13 +52,31 @@ public interface EzyClient {
 
     void udpConnect(String host, int port);
 
-    void udpSend(EzyRequest request);
+    default void udpSend(EzyRequest request) {
+        udpSend(request, false);
+    }
 
-    void udpSend(EzyCommand cmd, EzyArray data);
+    void udpSend(EzyRequest request, boolean encrypted);
+
+    default void udpSend(EzyCommand cmd, EzyArray data) {
+        udpSend(cmd, data, false);
+    }
+
+    void udpSend(EzyCommand cmd, EzyArray data, boolean encrypted);
 
     String getName();
 
     EzyClientConfig getConfig();
+
+    boolean isSocketEnableSSL();
+
+    EzySslType getSocketSslType();
+
+    boolean isSocketEnableEncryption();
+
+    boolean isSocketEnableCertificationSSL();
+
+    boolean isEnableDebug();
 
     EzyUser getMe();
 
@@ -67,9 +90,25 @@ public interface EzyClient {
 
     void setUdpStatus(EzyConnectionStatus status);
 
+    long getSessionId();
+
     void setSessionId(long sessionId);
 
+    String getSessionToken();
+
     void setSessionToken(String token);
+
+    byte[] getSessionKey();
+
+    void setSessionKey(byte[] sessionKey);
+
+    byte[] getPrivateKey();
+
+    void setPrivateKey(byte[] privateKey);
+
+    byte[] getPublicKey();
+
+    void setPublicKey(byte[] publicKey);
 
     EzyISocketClient getSocket();
 

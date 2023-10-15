@@ -6,13 +6,13 @@ import com.tvd12.ezyfox.jackson.JacksonObjectMapperBuilder;
 import io.netty.channel.ChannelInboundHandlerAdapter;
 import io.netty.channel.ChannelOutboundHandler;
 
-public class JacksonCodecCreator implements EzyCodecCreator {
+public class NettyJacksonCodecCreator implements EzyNettyCodecCreator {
 
     protected final ObjectMapper objectMapper;
     protected final EzyMessageDeserializer deserializer;
     protected final EzyMessageByTypeSerializer serializer;
 
-    public JacksonCodecCreator() {
+    public NettyJacksonCodecCreator() {
         this.objectMapper = newObjectMapper();
         this.serializer = newSerializer();
         this.deserializer = newDeserializer();
@@ -31,12 +31,22 @@ public class JacksonCodecCreator implements EzyCodecCreator {
     }
 
     @Override
-    public ChannelOutboundHandler newEncoder() {
-        return new JacksonMessageToByteEncoder(serializer);
+    public EzyObjectToByteEncoder newSocketEncoder() {
+        throw new UnsupportedOperationException("unsupported");
     }
 
     @Override
-    public ChannelInboundHandlerAdapter newDecoder(int maxRequestSize) {
-        return new JacksonByteToMessageDecoder(deserializer);
+    public EzyByteToObjectDecoder newSocketDecoder(int maxRequestSize) {
+        throw new UnsupportedOperationException("unsupported");
+    }
+
+    @Override
+    public ChannelOutboundHandler newNettyEncoder() {
+        return new NettyJacksonMessageToByteEncoder(serializer);
+    }
+
+    @Override
+    public ChannelInboundHandlerAdapter newNettyDecoder(int maxRequestSize) {
+        return new NettyJacksonByteToMessageDecoder(deserializer);
     }
 }
