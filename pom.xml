@@ -6,18 +6,18 @@
     <parent>
         <groupId>com.tvd12</groupId>
         <artifactId>ezyfox</artifactId>
-        <version>1.0.6</version>
+        <version>1.0.7</version>
     </parent>
 
     <artifactId>ezyfox-server-netty-client</artifactId>
 
-    <version>1.2.3</version>
+    <version>1.2.4</version>
     <name>ezyfox-server-netty-client</name>
     <url>https://youngmonkeys.org/</url>
 
     <properties>
         <ezy.version>1.2.9</ezy.version>
-        <netty.all.version>4.1.115.Final</netty.all.version>
+        <netty.all.version>4.2.7.Final</netty.all.version>
     </properties>
 
     <dependencies>
