@@ -9,7 +9,7 @@ java client for ezyfox server use netty
 <dependency>
     <groupId>com.tvd12</groupId>
     <artifactId>ezyfox-server-netty-client</artifactId>
-    <version>1.2.1</version>
+    <version>1.2.5</version>
 </dependency>
 ```
 
@@ -17,4 +17,3 @@ java client for ezyfox server use netty
 
 - Touch us on [Facebook](https://www.facebook.com/youngmonkeys.org)
 - Ask us on [stackask.com](https://stackask.com)
-- Email to me [Dzung](mailto:itprono3@gmail.com)

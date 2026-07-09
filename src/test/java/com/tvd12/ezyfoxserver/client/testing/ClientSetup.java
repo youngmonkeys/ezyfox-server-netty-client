@@ -1,8 +1,10 @@
 package com.tvd12.ezyfoxserver.client.testing;
 
+import com.tvd12.ezyfox.entity.EzyData;
 import com.tvd12.ezyfox.entity.EzyObject;
 import com.tvd12.ezyfoxserver.client.EzyClient;
 import com.tvd12.ezyfoxserver.client.constant.EzyCommand;
+import com.tvd12.ezyfoxserver.client.handler.EzyAppDataHandler;
 import com.tvd12.ezyfoxserver.client.handler.EzyAppDataHandlers;
 import com.tvd12.ezyfoxserver.client.manager.EzyHandlerManager;
 
@@ -27,5 +29,10 @@ public final class ClientSetup {
             String message = ((EzyObject) data).get("message", String.class);
             System.out.println("server response me: " + message);
         });
+        appDataHandlers.addHandler(
+            "udpGreet",
+            (EzyAppDataHandler<EzyData>) (app, data) ->
+                System.out.println("udpGreet: " + data)
+        );
     }
 }

@@ -18,7 +18,7 @@ public class EzyTcpClientTest {
 
         EzyTcpClient client = new EzyTcpClient(config);
         ClientSetup.getInstance().setup(client);
-        client.connect("ws.tvd12.com", 3005);
+        client.connect("localhost", 3005);
         //noinspection InfiniteLoopStatement
         while (true) {
             client.processEvents();
